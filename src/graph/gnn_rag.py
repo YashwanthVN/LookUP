@@ -3,8 +3,6 @@ import torch.nn.functional as F
 from torch_geometric.nn import GATConv
 
 class FinancialGNNRAG(torch.nn.Module):
-    """GNN for dense subgraph retrieval (Mavromatis & Karypis, 2024)"""
-    
     def __init__(self, in_channels=3, hidden=64, out=32):
         super().__init__()
         self.conv1 = GATConv(in_channels, hidden, heads=4)
@@ -19,4 +17,13 @@ class FinancialGNNRAG(torch.nn.Module):
         x = self.conv3(x, edge_index)
         return x
     
-    # ... scoring & path extraction methods (add later)
+    def extract_paths(self, kg_nx, query_entity, candidate_entities):
+        """Simplified path extraction – just shortest path"""
+        paths = []
+        for cand in candidate_entities[:3]:
+            try:
+                path = nx.shortest_path(kg_nx, query_entity, cand)
+                paths.append(" → ".join(path))
+            except:
+                continue
+        return paths
