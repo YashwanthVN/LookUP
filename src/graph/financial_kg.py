@@ -101,6 +101,22 @@ class DynamicFinancialKG:
             return node_list.index(f"company_{label}")
         except ValueError:
             return None
+    def add_sector_news(self, sector_name: str, sentiment: float, magnitude: float):
+        """
+        System 2: Multi-hop Injection. 
+        Impacts a sector hub, which ripples to all companies in that sector.
+        """
+        news_id = f"sector_news_{sector_name}_{datetime.now().timestamp()}"
+        self.graph.add_node(news_id, type="news", feat=[0.0, 0.0, 1.0], sentiment=sentiment)
+    
+        # ALL of the following lines must be indented inside the method!
+        sector_companies = [n for n, d in self.graph.nodes(data=True) 
+                            if d.get('type') == 'company' and d.get('sector') == sector_name]
+        
+        for comp in sector_companies:
+            self.graph.add_edge(news_id, comp, relation="SECTOR_IMPACT", value=magnitude)
+        
+        print(f"Injected news for {sector_name} sector. Impacted {len(sector_companies)} companies.")
 
     def to_pyg_data(self) -> Data:
         node_list = list(self.graph.nodes)

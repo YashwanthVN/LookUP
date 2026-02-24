@@ -20,11 +20,18 @@ class FinancialReasoningGNN(nn.Module):
         self.conv2 = GATv2Conv(hidden, hidden, heads=4, edge_dim=edge_channels)
         self.conv3 = GATv2Conv(hidden * 4, out, heads=1, concat=False)
         
-    def forward(self, x, edge_index, edge_attr):
-        # Step 1: System 1 (Numbers)
+    def forward(self, x, edge_index, edge_attr, return_attention=False):
+        # Step 1: System 1 (Magnitude Reasoning)
         x = self.conv1(x, edge_index, edge_attr).relu()
         
-        # Step 2: System 2 (Attention)
-        x = self.conv2(x, edge_index, edge_attr).relu()
+        # Step 2: System 2 (Contextual Attention) - This is where we get weights
+        # We get attention from conv2 because it has the multi-head context
+        x, (edge_index_attn, alpha) = self.conv2(x, edge_index, edge_attr, return_attention_weights=True)
+        x = x.relu()
+        
+        # Step 3: Final Projection
         x = self.conv3(x, edge_index)
+        
+        if return_attention:
+            return x, (edge_index_attn, alpha)
         return x
