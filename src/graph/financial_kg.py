@@ -1,23 +1,24 @@
 import torch
 import networkx as nx
 import pandas as pd
+import numpy as np
 from datetime import datetime
 from torch_geometric.data import Data
 from typing import List, Optional
-from src.streaming.financial_client import FMPClient
 
 class DynamicFinancialKG:
-    METRIC_TYPES = ["pe_ratio", "revenue", "ebitda", "profit_margin", "market_cap", "eps"]
+    # High-signal metrics for System 1
+    METRIC_TYPES = ["revenue", "ebitda", "netProfitMargin", "eps", "pe_ratio"]
 
     def __init__(self, quarters: int = 4, api_key: Optional[str] = None):
+        from src.streaming.financial_client import FMPClient # Local import to avoid circularity
         self.client = FMPClient(api_key)
         self.graph = nx.MultiDiGraph()
         self.quarters = quarters
 
     def build_for_tickers(self, tickers: List[str]):
         self.graph.clear()
-        
-        # ATOMIC FETCH: One call to rule them all
+        print(f"Step 1: Fetching bulk data for {len(tickers)} tickers...")
         bulk_data = self.client.get_bulk_data(tickers, self.quarters)
         profiles = bulk_data["profiles"]
         all_fin = bulk_data["financials"]
@@ -25,11 +26,12 @@ class DynamicFinancialKG:
         all_quarters = set()
 
         # 1. Build Nodes
+        print("Step 2: Building nodes...")
         for ticker in tickers:
             prof = profiles.get(ticker, {})
-            self.graph.add_node(f"company_{ticker}", type="company", sector=prof.get("sector"), feat=[1.0, 0.0, 0.0])
             
-            # Extract time points from this ticker's financial data
+            # Sector is key for competitor edges
+            self.graph.add_node(f"company_{ticker}", type="company", sector=prof.get("sector"), feat=[1.0, 0.0, 0.0])
             fin_df = all_fin.get(ticker, pd.DataFrame())
             if not fin_df.empty:
                 all_quarters.update(fin_df['date'].astype(str).tolist())
@@ -37,64 +39,78 @@ class DynamicFinancialKG:
         for m in self.METRIC_TYPES:
             self.graph.add_node(f"metric_{m}", type="metric", feat=[0.0, 1.0, 0.0])
 
-        if not all_quarters: all_quarters.add(datetime.now().strftime('%Y-%m-%d'))
         for q in sorted(all_quarters):
             self.graph.add_node(f"time_{q}", type="time", feat=[0.0, 0.0, 1.0])
 
-        # 2. Build Edges from Local Data
+        # 2. Build Edges (System 1: Hard Numbers)
         for ticker in tickers:
-            prof = profiles.get(ticker, {})
             fin_df = all_fin.get(ticker, pd.DataFrame())
-
-            # Quarterly Edges
             for _, row in fin_df.iterrows():
                 d_str = str(row['date'])
-                if 'eps' in row: self._add_metric_edges(ticker, "eps", d_str, row['eps'])
-                if 'revenue' in row: self._add_metric_edges(ticker, "revenue", d_str, row['revenue'])
+                for m in self.METRIC_TYPES:
+                    if m in row:
+                        self._add_metric_edges(ticker, m, d_str, row[m])
 
-            # Profile/Static Edges
-            for q_date in all_quarters:
-                if prof.get("pe"): self._add_metric_edges(ticker, "pe_ratio", q_date, prof["pe"])
-                if prof.get("mktCap"): self._add_metric_edges(ticker, "market_cap", q_date, prof["mktCap"])
+        # 3. Add Competitor Edges
+        print("Step 3: Building competitor edges...")
+        self._add_competitor_edges()
+        
+        # 4. Normalize
+        print("Step 4: Normalizing metrics...")
+        self._normalize_metrics()
+
+    def add_news_event(self, ticker, sentiment, magnitude):
+        """ System 2: News Node Injection """
+        news_id = f"news_{ticker}_{datetime.now().timestamp()}"
+        self.graph.add_node(news_id, type="news", feat=[0.0, 0.0, 1.0], sentiment=sentiment)
+        self.graph.add_edge(news_id, f"company_{ticker}", relation="IMPACTS", value=magnitude)
+
+    def _add_competitor_edges(self):
+        companies = [n for n, d in self.graph.nodes(data=True) if d.get('type') == 'company']
+        for i, c1 in enumerate(companies):
+            for c2 in companies[i+1:]:
+                if self.graph.nodes[c1].get('sector') == self.graph.nodes[c2].get('sector'):
+                    self.graph.add_edge(c1, c2, relation="COMPETES_WITH", value=1.0)
+
+    def _normalize_metrics(self):
+        # We only normalize numerical values on edges
+        values = [d['value'] for _, _, d in self.graph.edges(data=True) if 'value' in d]
+        if not values: return
+        mean, std = np.mean(values), np.std(values)
+        for _, _, d in self.graph.edges(data=True):
+            if 'value' in d:
+                d['value'] = (d['value'] - mean) / (std if std > 0 else 1.0)
 
     def _add_metric_edges(self, ticker, metric, date, val):
-        comp_node = f"company_{ticker}"
-        met_node = f"metric_{metric}"
-        t_node = f"time_{date}"
-        
-        if comp_node not in self.graph:
-            self.graph.add_node(comp_node, type="company", feat=[1.0, 0.0, 0.0])
-        if met_node not in self.graph:
-            self.graph.add_node(met_node, type="metric", feat=[0.0, 1.0, 0.0])
-        if t_node not in self.graph:
-            self.graph.add_node(t_node, type="time", feat=[0.0, 0.0, 1.0])
-        
+        comp_node, met_node, t_node = f"company_{ticker}", f"metric_{metric}", f"time_{date}"
         self.graph.add_edge(comp_node, met_node, relation="HAS_METRIC")
         self.graph.add_edge(met_node, t_node, relation="VALUE_AT", value=float(val or 0.0))
+        
+    @property
+    def node_labels(self):
+        """Returns a dictionary mapping index to node name for easy lookup"""
+        return {i: name for i, name in enumerate(self.graph.nodes)}
+
+    def get_node_index(self, label: str):
+        """Helper to find the index of a specific company or metric"""
+        node_list = list(self.graph.nodes)
+        try:
+            # Automatically handles the prefixing for you
+            if label in self.METRIC_TYPES:
+                return node_list.index(f"metric_{label}")
+            return node_list.index(f"company_{label}")
+        except ValueError:
+            return None
 
     def to_pyg_data(self) -> Data:
         node_list = list(self.graph.nodes)
         node_to_idx = {n: i for i, n in enumerate(node_list)}
+        x = torch.tensor([self.graph.nodes[n].get('feat', [0,0,0]) for n in node_list], dtype=torch.float)
         
-        # Use .get() with a default [0.0, 0.0, 0.0] to avoid KeyError
-        x_list = []
-        for n in node_list:
-            feat = self.graph.nodes[n].get('feat', [0.0, 0.0, 0.0])
-            x_list.append(feat)
-        
-        x = torch.tensor(x_list, dtype=torch.float)
-
-        edge_index = []
-        edge_attr = []
-        for u, v, attrs in self.graph.edges(data=True):
+        edge_index, edge_attr = [], []
+        for u, v, d in self.graph.edges(data=True):
             edge_index.append([node_to_idx[u], node_to_idx[v]])
-            edge_attr.append([attrs.get('value', 0.0)])
-
-        if not edge_index:
-            edge_index = torch.empty((2, 0), dtype=torch.long)
-            edge_attr = torch.empty((0, 1), dtype=torch.float)
-        else:
-            edge_index = torch.tensor(edge_index, dtype=torch.long).t().contiguous()
-            edge_attr = torch.tensor(edge_attr, dtype=torch.float)
-
-        return Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
+            edge_attr.append([d.get('value', 0.0)])
+            
+        return Data(x=x, edge_index=torch.tensor(edge_index).t().contiguous(), 
+                    edge_attr=torch.tensor(edge_attr, dtype=torch.float))

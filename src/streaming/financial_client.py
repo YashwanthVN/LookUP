@@ -13,23 +13,30 @@ class FMPClient:
         self.base_url = "https://financialmodelingprep.com/api/v3/"
 
     def get_bulk_data(self, tickers: List[str], quarters: int = 4) -> Dict:
-        """ Fetches all profiles and financials for multiple tickers in 2-3 calls. """
         ticker_str = ",".join(tickers)
         
-        # 1. Bulk Profiles (Atomic call for all tickers)
+        # 1. ATOMIC CALL: Batch Profile & Market Cap (1 call)
+        # FMP allows multiple symbols in the quote and profile endpoints
         profiles_raw = self._get(f"profile/{ticker_str}")
         profiles = {p['symbol']: p for p in profiles_raw} if isinstance(profiles_raw, list) else {}
 
-        # 2. Bulk Financials (Using batch logic or individual fallback if bulk is restricted)
-        # Note: FMP v3 'income-statement' supports one ticker at a time for deep history, 
-        # but we can fetch them concurrently or use a batch wrapper.
+        # 2. OPTIMIZED CALL: Batch Financials
+        # If your plan supports it, 'income-statement-bulk' is the fastest.
+        # Otherwise, we use a Session to reuse the TCP connection for speed.
         all_financials = {}
-        for ticker in tickers:
-            data = self._get(f"income-statement/{ticker}", {"period": "quarter", "limit": quarters})
-            if data == "PAYMENT_REQUIRED" or not data:
-                all_financials[ticker] = self._get_yfinance_fallback(ticker)
-            else:
-                all_financials[ticker] = pd.DataFrame(data)
+        with requests.Session() as session:
+            session.params = {"apikey": self.api_key, "period": "quarter", "limit": quarters}
+            for ticker in tickers:
+                url = f"{self.base_url}income-statement/{ticker}"
+                resp = session.get(url, timeout=10)
+                if resp.status_code == 200:
+                    df = pd.DataFrame(resp.json())
+                    # System 1 Calculation: Net Profit Margin
+                    if 'netIncome' in df.columns and 'revenue' in df.columns:
+                        df['netProfitMargin'] = df['netIncome'] / df['revenue'].replace(0, np.nan)
+                    all_financials[ticker] = df
+                else:
+                    all_financials[ticker] = self._get_yfinance_fallback(ticker)
 
         return {"profiles": profiles, "financials": all_financials}
 
@@ -48,6 +55,16 @@ class FMPClient:
         try:
             stock = yf.Ticker(ticker)
             df = stock.quarterly_financials.T.reset_index()
-            df = df.rename(columns={'index': 'date', 'Total Revenue': 'revenue', 'Basic EPS': 'eps'})
+            # Standardizing columns to match FMP naming convention for System 1
+            rename_map = {
+                'index': 'date', 
+                'Total Revenue': 'revenue', 
+                'Basic EPS': 'eps',
+                'Ebitda': 'ebitda',
+                'Net Income': 'netIncome'
+            }
+            df = df.rename(columns=rename_map)
+            if 'netIncome' in df.columns and 'revenue' in df.columns:
+                df['netProfitMargin'] = df['netIncome'] / df['revenue']
             return df
         except: return pd.DataFrame()
