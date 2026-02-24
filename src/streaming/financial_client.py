@@ -68,3 +68,10 @@ class FMPClient:
                 df['netProfitMargin'] = df['netIncome'] / df['revenue']
             return df
         except: return pd.DataFrame()
+        
+    def get_stock_news(self, ticker: str, limit: int = 10):
+        """Fetches real-time headlines for consensus sentiment analysis."""
+        url = f"https://financialmodelingprep.com/api/v3/stock_news?tickers={ticker}&limit={limit}&apikey={self.api_key}"
+        import requests
+        response = requests.get(url)
+        return response.json() if response.status_code == 200 else []
