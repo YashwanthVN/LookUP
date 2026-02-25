@@ -1,3 +1,4 @@
+import os
 import torch
 import networkx as nx
 import pandas as pd
@@ -5,6 +6,43 @@ import numpy as np
 from datetime import datetime
 from torch_geometric.data import Data
 from typing import List, Optional
+from transformers import BertTokenizer, BertForSequenceClassification
+from peft import PeftModel
+from pathlib import Path
+
+import yfinance as yf
+import requests
+from datetime import datetime, timedelta
+
+class UnifiedNewsFetcher:
+    def __init__(self, finnhub_api_key=None):
+        self.finnhub_key = finnhub_api_key or os.getenv("FINNHUB_API_KEY")
+        self.finnhub_url = "https://finnhub.io/api/v1/company-news"
+
+    def fetch(self, ticker, limit=5):
+        # 1. Try Finnhub first if key exists
+        if self.finnhub_key:
+            news = self._fetch_finnhub(ticker, limit)
+            if news: return news
+
+        # 2. Fallback to yfinance
+        return self._fetch_yfinance(ticker, limit)
+
+    def _fetch_finnhub(self, ticker, limit):
+        try:
+            end = datetime.now().strftime('%Y-%m-%d')
+            start = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+            params = {'symbol': ticker, 'from': start, 'to': end, 'token': self.finnhub_key}
+            r = requests.get(self.finnhub_url, params=params, timeout=10)
+            if r.status_code == 200:
+                return [{'headline': n.get('headline'), 'source': 'Finnhub'} for n in r.json()[:limit]]
+        except: return None
+
+    def _fetch_yfinance(self, ticker, limit):
+        try:
+            yf_ticker = yf.Ticker(ticker)
+            return [{'headline': n.get('title'), 'source': 'yfinance'} for n in yf_ticker.news[:limit]]
+        except: return []
 
 class DynamicFinancialKG:
     METRIC_TYPES = ["revenue", "ebitda", "netProfitMargin", "eps", "pe_ratio"]
@@ -14,6 +52,20 @@ class DynamicFinancialKG:
         self.client = FMPClient(api_key)
         self.graph = nx.MultiDiGraph()
         self.quarters = quarters
+        # Load FinBERT once during initialization
+        base_model_name = "yiyanghkust/finbert-tone"
+        self.tokenizer = BertTokenizer.from_pretrained(base_model_name)
+        base_model = BertForSequenceClassification.from_pretrained(base_model_name)
+        
+        current_file = Path(__file__).resolve()
+        project_root = current_file.parent.parent.parent 
+        adapter_path = project_root / "notebooks" / "finbert_sentiment_lora_final" 
+        try:
+            self.sentiment_model = PeftModel.from_pretrained(base_model, adapter_path)
+            print("✅ Success: Loaded Fine-Tuned LoRA Sentiment Model.")
+        except:
+            print("⚠️ Warning: Could not find LoRA adapters. Falling back to vanilla FinBERT.")
+            self.sentiment_model = base_model
 
     def build_for_tickers(self, tickers: List[str]):
         self.tickers = tickers
@@ -122,18 +174,81 @@ class DynamicFinancialKG:
         self.graph.add_edge(news_id, f"company_{ticker}", relation="IMPACTS", value=magnitude)
 
     def inject_real_time_news(self, ticker: str):
-        news_data = self.client.get_stock_news(ticker)
-        bullish = ['beat', 'growth', 'surge', 'buy', 'positive']
-        bearish = ['miss', 'fall', 'drop', 'sell', 'negative']
+        """Unified Fetcher + Advanced Graph Injection with BATCH Sentiment Inference"""
+        print(f"📡 System 2: Scanning news for {ticker}...")
         
-        total_sentiment = 0
-        for article in news_data:
-            text = article.get('text', '').lower()
-            total_sentiment += sum([1 for w in bullish if w in text])
-            total_sentiment -= sum([1 for w in bearish if w in text])
+        # 1. Use the Unified Fetcher for reliability
+        fetcher = UnifiedNewsFetcher(finnhub_api_key=os.getenv("FINNHUB_API_KEY"))
+        news_items = fetcher.fetch(ticker)
 
-        consensus = np.clip(total_sentiment / len(news_data), -1, 1) if news_data else 0
-        self.add_news_event(ticker, sentiment=consensus, magnitude=abs(total_sentiment))
+        if not news_items:
+            print(f"⚠️ No news found for {ticker} after trying all sources.")
+            return
+
+        # --- NEW: BATCH INFERENCE PREPARATION ---
+        headlines = [item['headline'] for item in news_items]
+        
+        # Truncate and move to same device as model
+        inputs = self.tokenizer(headlines, return_tensors="pt", truncation=True, 
+                                padding=True, max_length=512)
+        
+        # Ensure inputs are on the same device as the model (CPU/GPU)
+        device = next(self.sentiment_model.parameters()).device
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+
+        print(f"🧠 Running batch sentiment for {len(headlines)} headlines...")
+        self.sentiment_model.eval()
+        with torch.no_grad():
+            outputs = self.sentiment_model(**inputs)
+        
+        # Convert logits to probabilities for all headlines at once
+        # Resulting shape: [num_headlines, 3] -> (Neutral, Positive, Negative)
+        all_probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
+        
+        # --- END BATCH INFERENCE ---
+
+        for idx, item in enumerate(news_items):
+            headline = item['headline']
+            source = item['source']
+            timestamp = item.get('timestamp', datetime.now().timestamp())
+            
+            # Pull pre-calculated probabilities for this specific item
+            probs = all_probs[idx]
+            pos_score = probs[1].item()
+            neg_score = probs[2].item()
+            neutral_score = probs[0].item()
+
+            # Calculate continuous sentiment score (-1 to 1)
+            score = pos_score - neg_score
+
+            # Apply Neutrality Threshold
+            if neutral_score > pos_score and neutral_score > neg_score and abs(score) < 0.1:
+                score = 0.0
+            
+            # 3. Magnitude Calculation (Edge Weighting for GATv2)
+            magnitude = abs(score) * 2.0 + 0.5
+            
+            # 4. Graph Injection
+            news_id = f"news_{ticker}_{hash(headline) % 10000}"
+            
+            self.graph.add_node(
+                news_id, 
+                type="news", 
+                content=headline, 
+                source=source,
+                feat=[0.0, 0.0, 1.0], 
+                created_at=timestamp
+            )
+            
+            self.graph.add_edge(
+                news_id, 
+                f"company_{ticker}", 
+                relation="IMPACTS", 
+                value=magnitude, 
+                sentiment=score
+            )
+            
+        print(f"✅ System 2: Successfully injected {len(news_items)} nodes for {ticker} using {news_items[0]['source']}.")
 
     @property
     def node_labels(self):
@@ -191,3 +306,34 @@ class DynamicFinancialKG:
         return Data(x=x, 
                     edge_index=torch.tensor(edge_index).t().contiguous(), 
                     edge_attr=torch.tensor(edge_attr, dtype=torch.float))
+        
+    def _analyze_sentiment(self, text: str):
+        """
+        Fixed mapping for yiyanghkust/finbert-tone:
+        0: Neutral, 1: Positive, 2: Negative
+        """
+        # Truncate and move to same device as model
+        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
+        device = next(self.sentiment_model.parameters()).device
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+
+        with torch.no_grad():
+            outputs = self.sentiment_model(**inputs)
+        
+        # Convert logits to probabilities
+        probs = torch.nn.functional.softmax(outputs.logits, dim=-1)[0]
+        
+        # Index 1 = Positive, Index 2 = Negative
+        pos_score = probs[1].item()
+        neg_score = probs[2].item()
+        neutral_score = probs[0].item()
+
+        # We return the difference between Pos and Neg. 
+        # This gives a continuous range: -1.0 (Full Bear) to +1.0 (Full Bull)
+        sentiment_score = pos_score - neg_score
+
+        # Only return 0.0 if Neutral is truly the dominant label
+        if neutral_score > pos_score and neutral_score > neg_score and abs(sentiment_score) < 0.1:
+            return 0.0
+            
+        return sentiment_score

@@ -28,7 +28,7 @@ class FMPClient:
             session.params = {"apikey": self.api_key, "period": "quarter", "limit": quarters}
             for ticker in tickers:
                 url = f"{self.base_url}income-statement/{ticker}"
-                resp = session.get(url, timeout=10)
+                resp = session.get(url, timeout=30)
                 if resp.status_code == 200:
                     df = pd.DataFrame(resp.json())
                     # System 1 Calculation: Net Profit Margin
@@ -72,6 +72,9 @@ class FMPClient:
     def get_stock_news(self, ticker: str, limit: int = 10):
         """Fetches real-time headlines for consensus sentiment analysis."""
         url = f"https://financialmodelingprep.com/api/v3/stock_news?tickers={ticker}&limit={limit}&apikey={self.api_key}"
-        import requests
-        response = requests.get(url)
-        return response.json() if response.status_code == 200 else []
+        try:
+            response = requests.get(url, timeout=15)
+            return response.json()
+        except Exception as e:
+            print(f"❌ News API Error: {e}")
+            return []
