@@ -1,0 +1,56 @@
+{
+  "best_global_step": 2,
+  "best_metric": 1.0728830375228426e-06,
+  "best_model_checkpoint": "./finbert_lora_results\\checkpoint-2",
+  "epoch": 1.0,
+  "eval_steps": 500,
+  "global_step": 2,
+  "is_hyper_param_search": false,
+  "is_local_process_zero": true,
+  "is_world_process_zero": true,
+  "log_history": [
+    {
+      "epoch": 0.5,
+      "grad_norm": 7.715198040008545,
+      "learning_rate": 2e-05,
+      "loss": 1.6115342378616333,
+      "step": 1
+    },
+    {
+      "epoch": 1.0,
+      "grad_norm": 0.8876111507415771,
+      "learning_rate": 1.9e-05,
+      "loss": 0.01323768775910139,
+      "step": 2
+    },
+    {
+      "epoch": 1.0,
+      "eval_loss": 1.0728830375228426e-06,
+      "eval_runtime": 0.1016,
+      "eval_samples_per_second": 19.678,
+      "eval_steps_per_second": 9.839,
+      "step": 2
+    }
+  ],
+  "logging_steps": 1,
+  "max_steps": 20,
+  "num_input_tokens_seen": 0,
+  "num_train_epochs": 10,
+  "save_steps": 500,
+  "stateful_callbacks": {
+    "TrainerControl": {
+      "args": {
+        "should_epoch_stop": false,
+        "should_evaluate": false,
+        "should_log": false,
+        "should_save": true,
+        "should_training_stop": false
+      },
+      "attributes": {}
+    }
+  },
+  "total_flos": 90243423900.0,
+  "train_batch_size": 4,
+  "trial_name": null,
+  "trial_params": null
+}
