@@ -1,0 +1,1559 @@
+[
+  {
+    "event_name": "Dollar Index Surge",
+    "trigger_headline": "US Dollar Index jumps 3% after strong economic data",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "monetary_policy"
+  },
+  {
+    "event_name": "Dollar Weakness",
+    "trigger_headline": "US dollar falls to 6-month low amid dovish Fed commentary",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "monetary_policy"
+  },
+  {
+    "event_name": "Central Bank Gold Buying",
+    "trigger_headline": "Emerging market central banks add record gold reserves",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "commodity_specific"
+  },
+  {
+    "event_name": "Central Bank Gold Selling",
+    "trigger_headline": "European central bank announces gold reserve reduction",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "commodity_specific"
+  },
+  {
+    "event_name": "Silver Investment Demand Spike",
+    "trigger_headline": "Retail investors rush into silver ETFs amid inflation fears",
+    "target_ticker": "SLV",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "commodity_specific"
+  },
+  {
+    "event_name": "Silver ETF Liquidation",
+    "trigger_headline": "Large institutional outflows hit silver-backed ETFs",
+    "target_ticker": "SLV",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "commodity_specific"
+  },
+  {
+    "event_name": "Platinum Auto Demand Rise",
+    "trigger_headline": "Global auto production rebounds sharply boosting platinum demand",
+    "target_ticker": "PPLT",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "industrial_demand"
+  },
+  {
+    "event_name": "Platinum Demand Collapse",
+    "trigger_headline": "Automobile sector slowdown reduces catalytic converter demand",
+    "target_ticker": "PPLT",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "industrial_demand"
+  },
+  {
+    "event_name": "Natural Gas Cold Wave",
+    "trigger_headline": "Severe winter storm forecast increases heating demand",
+    "target_ticker": "UNG",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "weather_event"
+  },
+  {
+    "event_name": "Mild Winter Forecast",
+    "trigger_headline": "Warmer-than-expected winter outlook reduces gas demand",
+    "target_ticker": "UNG",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "weather_event"
+  },
+  {
+    "event_name": "Oil Demand Boom",
+    "trigger_headline": "Global air travel demand hits post-pandemic record",
+    "target_ticker": "USO",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "demand_shift"
+  },
+  {
+    "event_name": "Oil Demand Destruction",
+    "trigger_headline": "Major economies enter synchronized recession",
+    "target_ticker": "USO",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 2.0,
+    "category": "economic_cycle"
+  },
+  {
+    "event_name": "Copper Green Energy Boost",
+    "trigger_headline": "Massive renewable grid expansion increases copper consumption",
+    "target_ticker": "CPER",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "structural_trend"
+  },
+  {
+    "event_name": "Copper Warehouse Glut",
+    "trigger_headline": "LME copper inventories rise to 5-year high",
+    "target_ticker": "CPER",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "inventory_dynamics"
+  },
+  {
+    "event_name": "Lithium Mining Disruption",
+    "trigger_headline": "Political unrest halts lithium exports from major producer",
+    "target_ticker": "LIT",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "geopolitics"
+  },
+  {
+    "event_name": "Battery Tech Breakthrough",
+    "trigger_headline": "New sodium-ion battery reduces lithium dependency",
+    "target_ticker": "LIT",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "technology_disruption"
+  },
+  {
+    "event_name": "Gold Safe Haven Surge",
+    "trigger_headline": "Global equity markets plunge amid banking fears",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "financial_stability"
+  },
+  {
+    "event_name": "Equity Market Rally",
+    "trigger_headline": "Stock markets rally to all-time highs reducing safe-haven demand",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "risk_sentiment"
+  },
+  {
+    "event_name": "Steel Tariff Imposed",
+    "trigger_headline": "Government imposes 25% tariff on imported steel",
+    "target_ticker": "SLX",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "trade_policy"
+  },
+  {
+    "event_name": "Steel Tariff Removal",
+    "trigger_headline": "Trade deal removes steel import tariffs",
+    "target_ticker": "SLX",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "trade_policy"
+  },
+  {
+    "event_name": "Agricultural Drought",
+    "trigger_headline": "Severe drought hits Midwest corn production",
+    "target_ticker": "CORN",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "weather_event"
+  },
+  {
+    "event_name": "Record Crop Harvest",
+    "trigger_headline": "US farmers report record-breaking corn yields",
+    "target_ticker": "CORN",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "supply_shock"
+  },
+  {
+    "event_name": "Bank Stress Test Failure",
+    "trigger_headline": "Major bank fails Federal Reserve stress test",
+    "target_ticker": "XLF",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "financial_stability"
+  },
+  {
+    "event_name": "Bank Capital Boost",
+    "trigger_headline": "Leading banks raise dividends after strong stress test results",
+    "target_ticker": "XLF",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "financial_stability"
+  },
+  {
+    "event_name": "Tech Regulation Crackdown",
+    "trigger_headline": "Antitrust regulators fine major tech companies billions",
+    "target_ticker": "QQQ",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "legal_antitrust"
+  },
+  {
+    "event_name": "AI Subsidy Program",
+    "trigger_headline": "Government announces subsidies for AI chip manufacturing",
+    "target_ticker": "SMH",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Healthcare Drug Approval",
+    "trigger_headline": "FDA approves breakthrough cancer therapy",
+    "target_ticker": "IBB",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "clinical_data"
+  },
+  {
+    "event_name": "Drug Trial Failure",
+    "trigger_headline": "Phase 3 trial fails for major biotech treatment",
+    "target_ticker": "IBB",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "clinical_data"
+  },
+  {
+    "event_name": "Real Yield Decline",
+    "trigger_headline": "US 10-year real yields fall sharply after weak payroll data",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "rates_market"
+  },
+  {
+    "event_name": "Real Yield Spike",
+    "trigger_headline": "Real yields surge to yearly highs amid strong economic growth",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "rates_market"
+  },
+  {
+    "event_name": "China Stimulus Package",
+    "trigger_headline": "China unveils large infrastructure stimulus to revive growth",
+    "target_ticker": "HG=F",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "China Property Crisis Escalation",
+    "trigger_headline": "Major Chinese property developer defaults on offshore debt",
+    "target_ticker": "HG=F",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "financial_stability"
+  },
+  {
+    "event_name": "OPEC Production Increase",
+    "trigger_headline": "OPEC surprises markets with unexpected output hike",
+    "target_ticker": "USO",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "supply_shock"
+  },
+  {
+    "event_name": "OPEC Emergency Cut",
+    "trigger_headline": "OPEC announces emergency production cut amid price slump",
+    "target_ticker": "USO",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "supply_shock"
+  },
+  {
+    "event_name": "Uranium Supply Agreement",
+    "trigger_headline": "Long-term uranium supply deal signed for new reactors",
+    "target_ticker": "URA",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "structural_trend"
+  },
+  {
+    "event_name": "Uranium Oversupply Warning",
+    "trigger_headline": "Kazakhstan increases uranium output beyond expectations",
+    "target_ticker": "URA",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "supply_shock"
+  },
+  {
+    "event_name": "Palladium Auto Strike",
+    "trigger_headline": "Auto workers strike halts vehicle production nationwide",
+    "target_ticker": "PALL",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "industrial_demand"
+  },
+  {
+    "event_name": "Palladium Export Ban",
+    "trigger_headline": "Major producer bans palladium exports amid sanctions",
+    "target_ticker": "PALL",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "geopolitics"
+  },
+  {
+    "event_name": "Aluminum Demand Surge",
+    "trigger_headline": "EV manufacturers ramp up aluminum-intensive production",
+    "target_ticker": "JJU",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "industrial_demand"
+  },
+  {
+    "event_name": "Aluminum Import Flood",
+    "trigger_headline": "Cheap aluminum imports surge after trade agreement",
+    "target_ticker": "JJU",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "trade_policy"
+  },
+  {
+    "event_name": "Silver Solar Subsidy",
+    "trigger_headline": "Government expands subsidies for solar installations",
+    "target_ticker": "SLV",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Solar Panel Inventory Glut",
+    "trigger_headline": "Solar manufacturers report excess panel inventory",
+    "target_ticker": "SLV",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "industrial_demand"
+  },
+  {
+    "event_name": "Gold Mining Tax Increase",
+    "trigger_headline": "Major gold-producing nation raises mining royalties",
+    "target_ticker": "GDX",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Gold Mining Tax Relief",
+    "trigger_headline": "Government cuts mining taxes to boost production",
+    "target_ticker": "GDX",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Nickel Supply Disruption",
+    "trigger_headline": "Flooding shuts down major nickel mines in Indonesia",
+    "target_ticker": "JJN",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "supply_shock"
+  },
+  {
+    "event_name": "Nickel Demand Slowdown",
+    "trigger_headline": "Battery manufacturers reduce nickel orders amid slowdown",
+    "target_ticker": "JJN",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "industrial_demand"
+  },
+  {
+    "event_name": "Emerging Market Currency Crisis",
+    "trigger_headline": "Emerging market currencies tumble amid capital flight",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "financial_stability"
+  },
+  {
+    "event_name": "Global Risk-On Rally",
+    "trigger_headline": "Investors rotate into equities as volatility index collapses",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "risk_sentiment"
+  },
+  {
+    "event_name": "Natural Gas Export Surge",
+    "trigger_headline": "LNG exports hit record high amid global shortages",
+    "target_ticker": "UNG",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "demand_shift"
+  },
+  {
+    "event_name": "Gas Storage Surplus",
+    "trigger_headline": "US natural gas storage levels exceed seasonal averages",
+    "target_ticker": "UNG",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "inventory_dynamics"
+  },
+  {
+    "event_name": "Platinum Hydrogen Demand",
+    "trigger_headline": "Green hydrogen projects boost platinum catalyst demand",
+    "target_ticker": "PPLT",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "structural_trend"
+  },
+  {
+    "event_name": "Hydrogen Funding Cuts",
+    "trigger_headline": "Government slashes hydrogen energy subsidies",
+    "target_ticker": "PPLT",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Cobalt Supply Risk",
+    "trigger_headline": "Political instability threatens cobalt exports",
+    "target_ticker": "LIT",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "geopolitics"
+  },
+  {
+    "event_name": "Cobalt Recycling Breakthrough",
+    "trigger_headline": "New battery recycling tech reduces need for mined cobalt",
+    "target_ticker": "LIT",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "technology_disruption"
+  },
+  {
+    "event_name": "Oil Refinery Explosion",
+    "trigger_headline": "Major refinery explosion disrupts fuel supply",
+    "target_ticker": "XLE",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "supply_shock"
+  },
+  {
+    "event_name": "Refinery Capacity Expansion",
+    "trigger_headline": "New refinery capacity comes online ahead of demand",
+    "target_ticker": "XLE",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "supply_dynamics"
+  },
+  {
+    "event_name": "Consumer Staples Surge",
+    "trigger_headline": "Defensive stocks rally amid economic uncertainty",
+    "target_ticker": "XLP",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "sector_rotation"
+  },
+  {
+    "event_name": "Consumer Spending Collapse",
+    "trigger_headline": "Retail sales drop sharply in latest monthly report",
+    "target_ticker": "XLP",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "macro_data"
+  },
+  {
+    "event_name": "Semiconductor Export Ban",
+    "trigger_headline": "Government tightens semiconductor export restrictions",
+    "target_ticker": "SMH",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "trade_policy"
+  },
+  {
+    "event_name": "Chip Manufacturing Grant",
+    "trigger_headline": "Federal funding boosts domestic semiconductor production",
+    "target_ticker": "SMH",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Agricultural Pest Outbreak",
+    "trigger_headline": "Locust outbreak threatens wheat production",
+    "target_ticker": "WEAT",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "biological_hazard"
+  },
+  {
+    "event_name": "Wheat Export Boom",
+    "trigger_headline": "Global wheat exports rise after bumper harvest",
+    "target_ticker": "WEAT",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "supply_dynamics"
+  },
+  {
+    "event_name": "Bank Lending Expansion",
+    "trigger_headline": "Commercial bank lending accelerates for third straight quarter",
+    "target_ticker": "XLF",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "macro_data"
+  },
+  {
+    "event_name": "Credit Crunch Warning",
+    "trigger_headline": "Banks tighten lending standards amid recession fears",
+    "target_ticker": "XLF",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "financial_stability"
+  },
+  {
+    "event_name": "Rare Earth Export Controls",
+    "trigger_headline": "Country restricts rare earth metal exports",
+    "target_ticker": "REMX",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "trade_policy"
+  },
+  {
+    "event_name": "Rare Earth Supply Expansion",
+    "trigger_headline": "New rare earth mining capacity approved overseas",
+    "target_ticker": "REMX",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "supply_dynamics"
+  },
+  {
+    "event_name": "US Debt Downgrade",
+    "trigger_headline": "Credit rating agency downgrades US sovereign debt outlook",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "financial_stability"
+  },
+  {
+    "event_name": "Debt Ceiling Resolution",
+    "trigger_headline": "Congress reaches bipartisan deal to raise debt ceiling",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Inflation Expectations Surge",
+    "trigger_headline": "5-year breakeven inflation rate jumps to multi-year high",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "inflation_expectations"
+  },
+  {
+    "event_name": "Disinflation Trend Strengthens",
+    "trigger_headline": "Core inflation drops below central bank target",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "macro_data"
+  },
+  {
+    "event_name": "Copper EV Infrastructure Plan",
+    "trigger_headline": "Government unveils nationwide EV charging network expansion",
+    "target_ticker": "CPER",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "EV Sales Slowdown",
+    "trigger_headline": "Electric vehicle sales growth slows sharply in Q4",
+    "target_ticker": "CPER",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "demand_shift"
+  },
+  {
+    "event_name": "Silver Monetary Demand Spike",
+    "trigger_headline": "Investors increase silver coin purchases amid currency volatility",
+    "target_ticker": "SLV",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "risk_sentiment"
+  },
+  {
+    "event_name": "Precious Metals Margin Hike",
+    "trigger_headline": "Exchange raises margin requirements for silver futures",
+    "target_ticker": "SLV",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "market_structure"
+  },
+  {
+    "event_name": "Oil Shipping Disruption",
+    "trigger_headline": "Key maritime chokepoint faces temporary closure",
+    "target_ticker": "USO",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "geopolitics"
+  },
+  {
+    "event_name": "Strategic Petroleum Release",
+    "trigger_headline": "Government announces large crude oil reserve release",
+    "target_ticker": "USO",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "government_intervention"
+  },
+  {
+    "event_name": "Lithium Supply Agreement",
+    "trigger_headline": "Major automaker signs long-term lithium supply contract",
+    "target_ticker": "LIT",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "corporate_action"
+  },
+  {
+    "event_name": "Lithium Price Crash",
+    "trigger_headline": "Spot lithium prices drop 30% amid oversupply concerns",
+    "target_ticker": "LIT",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "supply_dynamics"
+  },
+  {
+    "event_name": "Uranium Strategic Reserve Build",
+    "trigger_headline": "Government expands national uranium stockpile program",
+    "target_ticker": "URA",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "government_intervention"
+  },
+  {
+    "event_name": "Nuclear Project Cancellation",
+    "trigger_headline": "Country cancels planned nuclear power plant construction",
+    "target_ticker": "URA",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "infrastructure_policy"
+  },
+  {
+    "event_name": "Aluminum Energy Subsidy",
+    "trigger_headline": "Government offers subsidies to energy-intensive aluminum smelters",
+    "target_ticker": "JJU",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Aluminum Demand Weakness",
+    "trigger_headline": "Construction sector slowdown hits aluminum consumption",
+    "target_ticker": "JJU",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "economic_cycle"
+  },
+  {
+    "event_name": "Platinum Supply Cut",
+    "trigger_headline": "Major mine announces unexpected production halt",
+    "target_ticker": "PPLT",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "supply_shock"
+  },
+  {
+    "event_name": "Catalyst Substitution Trend",
+    "trigger_headline": "Automakers shift from platinum to cheaper alternatives",
+    "target_ticker": "PPLT",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "technology_disruption"
+  },
+  {
+    "event_name": "Natural Gas Pipeline Disruption",
+    "trigger_headline": "Pipeline outage disrupts regional gas distribution",
+    "target_ticker": "UNG",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "supply_shock"
+  },
+  {
+    "event_name": "Gas Demand Decline",
+    "trigger_headline": "Industrial output slowdown reduces natural gas consumption",
+    "target_ticker": "UNG",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "demand_shift"
+  },
+  {
+    "event_name": "Nickel EV Boom",
+    "trigger_headline": "Battery makers increase nickel procurement amid EV surge",
+    "target_ticker": "JJN",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "structural_trend"
+  },
+  {
+    "event_name": "Nickel Trade Restriction Lifted",
+    "trigger_headline": "Export restrictions on nickel removed after trade talks",
+    "target_ticker": "JJN",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "trade_policy"
+  },
+  {
+    "event_name": "Gold Physical Shortage",
+    "trigger_headline": "Bullion dealers report tight physical gold supplies",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "commodity_specific"
+  },
+  {
+    "event_name": "Gold Jewelry Demand Weakness",
+    "trigger_headline": "Rising prices dampen jewelry demand in key markets",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "demand_shift"
+  },
+  {
+    "event_name": "Energy Sector Earnings Beat",
+    "trigger_headline": "Major oil producers post stronger-than-expected quarterly profits",
+    "target_ticker": "XLE",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "earnings"
+  },
+  {
+    "event_name": "Energy Windfall Tax",
+    "trigger_headline": "Government proposes windfall tax on oil companies",
+    "target_ticker": "XLE",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Bank Rate Cut Boost",
+    "trigger_headline": "Central bank signals potential rate cuts to support lending",
+    "target_ticker": "XLF",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "monetary_policy"
+  },
+  {
+    "event_name": "Bank Profit Warning",
+    "trigger_headline": "Major banks warn of rising loan defaults",
+    "target_ticker": "XLF",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "financial_stability"
+  },
+  {
+    "event_name": "Semiconductor AI Demand",
+    "trigger_headline": "Cloud providers increase AI chip orders",
+    "target_ticker": "SMH",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "demand_shift"
+  },
+  {
+    "event_name": "Chip Inventory Build-Up",
+    "trigger_headline": "Semiconductor inventories rise amid slowing sales",
+    "target_ticker": "SMH",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "inventory_dynamics"
+  },
+  {
+    "event_name": "Healthcare Spending Increase",
+    "trigger_headline": "Government boosts healthcare budget allocations",
+    "target_ticker": "XLV",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Drug Pricing Reform",
+    "trigger_headline": "Legislation passes to cap prescription drug prices",
+    "target_ticker": "XLV",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "healthcare_policy"
+  },
+  {
+    "event_name": "Consumer Confidence Rebound",
+    "trigger_headline": "Consumer confidence index rises to yearly high",
+    "target_ticker": "XLY",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "macro_data"
+  },
+  {
+    "event_name": "Retail Bankruptcy Wave",
+    "trigger_headline": "Multiple retail chains file for bankruptcy protection",
+    "target_ticker": "XLY",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "financial_stability"
+  },
+  {
+    "event_name": "Rare Earth Defense Contract",
+    "trigger_headline": "Defense department awards rare earth processing contract",
+    "target_ticker": "REMX",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "government_contract"
+  },
+  {
+    "event_name": "Rare Earth Demand Slowdown",
+    "trigger_headline": "Electronics demand slowdown pressures rare earth prices",
+    "target_ticker": "REMX",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "demand_shift"
+  },
+  {
+    "event_name": "Corn Export Ban",
+    "trigger_headline": "Major producer halts corn exports to secure domestic supply",
+    "target_ticker": "CORN",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "geopolitics"
+  },
+  {
+    "event_name": "Corn Demand Drop",
+    "trigger_headline": "Biofuel demand weakens reducing corn consumption",
+    "target_ticker": "CORN",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "demand_shift"
+  },
+  {
+    "event_name": "Fed Interest Rate Hike",
+    "trigger_headline": "Federal Reserve raises interest rates by 50 basis points to curb inflation",
+    "target_ticker": "SPY",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "monetary_policy"
+  },
+  {
+    "event_name": "Fed Interest Rate Hike",
+    "trigger_headline": "Fed raises interest rates by 75 basis points to combat inflation",
+    "target_ticker": "GOLD",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "monetary_policy"
+  },
+  {
+    "event_name": "Fed Interest Rate Cut",
+    "trigger_headline": "Federal Reserve cuts interest rates by 50 basis points amid slowing growth",
+    "target_ticker": "QQQ",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "monetary_policy"
+  },
+  {
+    "event_name": "CPI Inflation Surge",
+    "trigger_headline": "US CPI rises to 6.2%, exceeding market expectations",
+    "target_ticker": "TLT",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "macro_data"
+  },
+  {
+    "event_name": "CPI Cooling",
+    "trigger_headline": "Inflation cools to 2.8% as consumer prices stabilize",
+    "target_ticker": "SPY",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "macro_data"
+  },
+  {
+    "event_name": "Strong GDP Growth",
+    "trigger_headline": "US GDP expands at 4.5% annualized rate in Q2",
+    "target_ticker": "XLI",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "economic_cycle"
+  },
+  {
+    "event_name": "GDP Contraction",
+    "trigger_headline": "US economy contracts for second consecutive quarter",
+    "target_ticker": "SPY",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "economic_cycle"
+  },
+  {
+    "event_name": "Nvidia Earnings Beat",
+    "trigger_headline": "Nvidia reports record revenue driven by AI chip demand",
+    "target_ticker": "NVDA",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "earnings"
+  },
+  {
+    "event_name": "Apple Earnings Miss",
+    "trigger_headline": "Apple misses quarterly revenue estimates amid weak iPhone sales",
+    "target_ticker": "AAPL",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "earnings"
+  },
+  {
+    "event_name": "Oil Supply Cut",
+    "trigger_headline": "OPEC announces unexpected production cut to support oil prices",
+    "target_ticker": "XOM",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "supply_shock"
+  },
+  {
+    "event_name": "Gold ETF Inflows",
+    "trigger_headline": "Gold ETFs record largest weekly inflow in 2 years",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "commodity_specific"
+  },
+  {
+    "event_name": "Gold ETF Outflows",
+    "trigger_headline": "Investors pull $2B from gold ETFs amid equity rally",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "commodity_specific"
+  },
+  {
+    "event_name": "Silver Industrial Demand Surge",
+    "trigger_headline": "Solar panel production hits record high, boosting silver demand",
+    "target_ticker": "SLV",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "industrial_demand"
+  },
+  {
+    "event_name": "Silver Industrial Slowdown",
+    "trigger_headline": "Global electronics production declines amid recession fears",
+    "target_ticker": "SLV",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "industrial_demand"
+  },
+  {
+    "event_name": "Copper Infrastructure Stimulus",
+    "trigger_headline": "Government approves massive infrastructure spending package",
+    "target_ticker": "HG=F",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Copper Demand Collapse",
+    "trigger_headline": "China manufacturing PMI contracts sharply",
+    "target_ticker": "HG=F",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "economic_cycle"
+  },
+  {
+    "event_name": "Lithium Oversupply",
+    "trigger_headline": "Lithium prices fall 25% amid global production surge",
+    "target_ticker": "LIT",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "supply_dynamics"
+  },
+  {
+    "event_name": "Lithium EV Boom",
+    "trigger_headline": "Global EV sales jump 45% year-over-year",
+    "target_ticker": "LIT",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "structural_trend"
+  },
+  {
+    "event_name": "Geopolitical Conflict Escalation",
+    "trigger_headline": "Middle East tensions escalate after cross-border strikes",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "geopolitics"
+  },
+  {
+    "event_name": "Peace Agreement Announcement",
+    "trigger_headline": "Ceasefire agreement reduces geopolitical risk premium",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "geopolitics"
+  },
+  {
+    "event_name": "Bank Liquidity Crisis",
+    "trigger_headline": "Regional bank faces liquidity crunch after deposit outflows",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "financial_stability"
+  },
+  {
+    "event_name": "Commodity Margin Hike",
+    "trigger_headline": "Exchange raises margin requirements for gold futures",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "market_structure"
+  },
+  {
+    "event_name": "Mine Strike Disruption",
+    "trigger_headline": "Workers strike at major Chilean copper mine",
+    "target_ticker": "CPER",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "supply_shock"
+  },
+  {
+    "event_name": "Major Gold Discovery",
+    "trigger_headline": "Mining company announces significant new gold deposit",
+    "target_ticker": "GDXJ",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "supply_dynamics"
+  },
+  {
+    "event_name": "Strategic Reserve Release",
+    "trigger_headline": "US releases copper from strategic reserves",
+    "target_ticker": "HG=F",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "government_intervention"
+  },
+  {
+    "event_name": "Inflation Hedge Buying",
+    "trigger_headline": "Inflation expectations spike in bond markets",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "inflation_expectations"
+  },
+  {
+    "event_name": "Real Yield Spike",
+    "trigger_headline": "US real yields rise sharply after strong jobs data",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "monetary_policy"
+  },
+  {
+    "event_name": "Uranium Nuclear Expansion",
+    "trigger_headline": "Multiple countries approve new nuclear energy projects",
+    "target_ticker": "URA",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "structural_trend"
+  },
+  {
+    "event_name": "Nuclear Policy Reversal",
+    "trigger_headline": "Government accelerates nuclear plant shutdown timeline",
+    "target_ticker": "URA",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "infrastructure_policy"
+  },
+  {
+    "event_name": "Aluminum Energy Shock",
+    "trigger_headline": "Energy crisis forces aluminum smelter shutdowns in Europe",
+    "target_ticker": "JJU",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "supply_shock"
+  },
+  {
+    "event_name": "Palladium Sanctions",
+    "trigger_headline": "Sanctions disrupt palladium exports from major producer",
+    "target_ticker": "PALL",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "geopolitics"
+  },
+  {
+    "event_name": "Global Recession Fears",
+    "trigger_headline": "IMF warns of synchronized global economic slowdown",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "economic_cycle"
+  },
+  {
+    "event_name": "Global Growth Upgrade",
+    "trigger_headline": "IMF upgrades global GDP forecast amid resilient demand",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "economic_cycle"
+  },
+  {
+    "event_name": "Gold Futures Short Squeeze",
+    "trigger_headline": "Gold futures spike as short sellers rush to cover positions",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "market_structure"
+  },
+  {
+    "event_name": "Gold Speculative Positioning Drop",
+    "trigger_headline": "Hedge funds cut bullish gold bets to yearly low",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "market_structure"
+  },
+  {
+    "event_name": "Silver Industrial Expansion",
+    "trigger_headline": "Global electronics manufacturing rebounds strongly",
+    "target_ticker": "SLV",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "industrial_demand"
+  },
+  {
+    "event_name": "Silver Coin Sales Slump",
+    "trigger_headline": "Retail demand for silver coins falls sharply",
+    "target_ticker": "SLV",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "commodity_specific"
+  },
+  {
+    "event_name": "Copper Strike Escalation",
+    "trigger_headline": "Labor strike spreads across multiple copper mines",
+    "target_ticker": "HG=F",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "supply_shock"
+  },
+  {
+    "event_name": "Copper Recycling Increase",
+    "trigger_headline": "Recycled copper supply surges amid sustainability push",
+    "target_ticker": "HG=F",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "supply_dynamics"
+  },
+  {
+    "event_name": "Lithium Strategic Investment",
+    "trigger_headline": "Sovereign wealth fund invests heavily in lithium mining",
+    "target_ticker": "LIT",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "corporate_action"
+  },
+  {
+    "event_name": "Lithium Demand Revision Lower",
+    "trigger_headline": "Analysts cut long-term EV adoption forecasts",
+    "target_ticker": "LIT",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "structural_trend"
+  },
+  {
+    "event_name": "Uranium Reactor Restart",
+    "trigger_headline": "Country announces restart of idled nuclear reactors",
+    "target_ticker": "URA",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "demand_shift"
+  },
+  {
+    "event_name": "Uranium Policy Delay",
+    "trigger_headline": "Government delays approval of new nuclear facilities",
+    "target_ticker": "URA",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "infrastructure_policy"
+  },
+  {
+    "event_name": "Oil Inventory Drawdown",
+    "trigger_headline": "Weekly crude inventories fall far more than expected",
+    "target_ticker": "USO",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "inventory_dynamics"
+  },
+  {
+    "event_name": "Oil Inventory Build",
+    "trigger_headline": "Crude stockpiles rise for fourth consecutive week",
+    "target_ticker": "USO",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "inventory_dynamics"
+  },
+  {
+    "event_name": "Natural Gas Heatwave Demand",
+    "trigger_headline": "Extreme summer heat boosts electricity and gas demand",
+    "target_ticker": "UNG",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "weather_event"
+  },
+  {
+    "event_name": "Renewable Output Surge",
+    "trigger_headline": "Record wind generation reduces natural gas consumption",
+    "target_ticker": "UNG",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "demand_shift"
+  },
+  {
+    "event_name": "Platinum Jewelry Demand Growth",
+    "trigger_headline": "Asian markets report surge in platinum jewelry sales",
+    "target_ticker": "PPLT",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "demand_shift"
+  },
+  {
+    "event_name": "Platinum Supply Expansion",
+    "trigger_headline": "New platinum mine begins commercial production",
+    "target_ticker": "PPLT",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "supply_dynamics"
+  },
+  {
+    "event_name": "Nickel Battery Innovation",
+    "trigger_headline": "New battery chemistry increases nickel intensity",
+    "target_ticker": "JJN",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "technology_disruption"
+  },
+  {
+    "event_name": "Nickel Price Correction",
+    "trigger_headline": "Nickel futures fall sharply after speculative rally",
+    "target_ticker": "JJN",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "market_structure"
+  },
+  {
+    "event_name": "Rare Earth Strategic Stockpile",
+    "trigger_headline": "Government expands rare earth national reserves",
+    "target_ticker": "REMX",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "government_intervention"
+  },
+  {
+    "event_name": "Rare Earth Import Deal",
+    "trigger_headline": "Trade pact increases rare earth imports",
+    "target_ticker": "REMX",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "trade_policy"
+  },
+  {
+    "event_name": "Energy Transition Acceleration",
+    "trigger_headline": "New climate legislation accelerates clean energy adoption",
+    "target_ticker": "ICLN",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "climate_policy"
+  },
+  {
+    "event_name": "Clean Energy Subsidy Cuts",
+    "trigger_headline": "Budget proposal reduces renewable energy incentives",
+    "target_ticker": "ICLN",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Bank Liquidity Injection",
+    "trigger_headline": "Central bank injects emergency liquidity into financial system",
+    "target_ticker": "XLF",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "monetary_policy"
+  },
+  {
+    "event_name": "Rising Loan Defaults",
+    "trigger_headline": "Consumer loan delinquencies rise to multi-year high",
+    "target_ticker": "XLF",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "financial_stability"
+  },
+  {
+    "event_name": "Tech Breakthrough Earnings",
+    "trigger_headline": "Major AI firm reports record-breaking quarterly growth",
+    "target_ticker": "QQQ",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "earnings"
+  },
+  {
+    "event_name": "Tech Sector Layoffs",
+    "trigger_headline": "Large tech companies announce widespread layoffs",
+    "target_ticker": "QQQ",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "corporate_restructuring"
+  },
+  {
+    "event_name": "Healthcare Innovation Grant",
+    "trigger_headline": "Government funds breakthrough medical research initiative",
+    "target_ticker": "XLV",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "fiscal_policy"
+  },
+  {
+    "event_name": "Healthcare Cost Controls",
+    "trigger_headline": "New healthcare cost containment bill passes senate",
+    "target_ticker": "XLV",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "healthcare_policy"
+  },
+  {
+    "event_name": "Retail Sales Boom",
+    "trigger_headline": "Holiday retail sales exceed analyst expectations",
+    "target_ticker": "XLY",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "consumer_spending"
+  },
+  {
+    "event_name": "Consumer Debt Surge",
+    "trigger_headline": "Credit card debt rises sharply across households",
+    "target_ticker": "XLY",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "financial_stability"
+  },
+  {
+    "event_name": "Agricultural Export Surge",
+    "trigger_headline": "Global wheat demand increases due to supply shortages abroad",
+    "target_ticker": "WEAT",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "trade_dynamics"
+  },
+  {
+    "event_name": "Grain Supply Normalization",
+    "trigger_headline": "Major grain exporter resumes shipments after disruption",
+    "target_ticker": "WEAT",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "supply_dynamics"
+  },
+  {
+    "event_name": "Inflation Hedge Fund Buying",
+    "trigger_headline": "Large hedge funds rotate capital into precious metals",
+    "target_ticker": "GLD",
+    "expected_impact": "positive",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "institutional_sentiment"
+  },
+  {
+    "event_name": "ETF Precious Metal Outflows",
+    "trigger_headline": "Precious metal ETFs see largest weekly outflows this year",
+    "target_ticker": "GLD",
+    "expected_impact": "negative",
+    "magnitude": "medium",
+    "weight": 1.0,
+    "category": "commodity_specific"
+  },
+  {
+    "event_name": "Emerging Market Infrastructure Boom",
+    "trigger_headline": "Emerging economies accelerate infrastructure investments",
+    "target_ticker": "HG=F",
+    "expected_impact": "positive",
+    "magnitude": "high",
+    "weight": 1.5,
+    "category": "structural_trend"
+  },
+  {
+    "event_name": "Emerging Market Debt Crisis",
+    "trigger_headline": "Several emerging markets seek IMF bailout support",
+    "target_ticker": "HG=F",
+    "expected_impact": "negative",
+    "magnitude": "high",
+    "weight": 2.0,
+    "category": "financial_stability"
+  }
+]

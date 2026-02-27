@@ -9,9 +9,11 @@ class FinancialReasoningGNN(nn.Module):
         # SYSTEM 1: Structural Track (Math/Fundamentals)
         # We use an MLP to help NNConv interpret raw metrics like Revenue & Market Cap
         sys1_mlp = nn.Sequential(
-            nn.Linear(edge_channels, hidden * in_channels),
+            nn.Linear(edge_channels, hidden),
             nn.ReLU(),
-            nn.Linear(hidden * in_channels, in_channels * hidden)
+            nn.Linear(hidden, in_channels * hidden),
+            nn.LayerNorm(in_channels * hidden), # Prevents the "blowing up"
+            nn.Tanh() # Squashes the output to a safe [-1, 1] range
         )
         self.conv_sys1 = NNConv(in_channels, hidden, sys1_mlp)
         
