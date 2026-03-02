@@ -2,6 +2,7 @@ import os
 import requests
 import pandas as pd
 import yfinance as yf
+import numpy as np
 from typing import Dict, List, Optional
 from dotenv import load_dotenv
 
@@ -40,6 +41,14 @@ class FMPClient:
 
         return {"profiles": profiles, "financials": all_financials}
 
+    def get_historical_prices(self, ticker, limit=30):
+        url = f"{self.base_url}historical-price-full/{ticker}?timeseries={limit}&apikey={self.api_key}"
+        resp = requests.get(url)
+        if resp.status_code == 200:
+            data = resp.json().get('historical', [])
+            return [day['close'] for day in data][::-1] # Ascending order
+        return []
+    
     def _get(self, endpoint: str, params: dict = None) -> dict:
         if params is None: params = {}
         params["apikey"] = self.api_key

@@ -26,7 +26,7 @@ def calibrate_attention(kg_obj, training_scenarios, pyg_data):
             print(f"❌ CRITICAL: NaN detected in Alpha at Epoch {epoch}. Stopping.")
             break
         
-        total_loss = torch.tensor(0.0, device=pyg_data.x.device, requires_grad=True)
+        total_loss = torch.tensor(0.0, device=pyg_data.x.device)
         edges_found = 0
         
         for scenario in training_scenarios:
@@ -43,7 +43,7 @@ def calibrate_attention(kg_obj, training_scenarios, pyg_data):
                 current_attention = alpha[true_edge_idx].mean()
                 
                 # Use Mean Squared Error style loss for smoother gradients
-                total_loss = total_loss + torch.pow(1.0 - current_attention, 2) * weight
+                total_loss = total_loss + torch.pow(1.0 - current_attention, 2) * scenario['weight']
 
         if edges_found > 0:
             # Normalize loss by number of edges to prevent huge gradients

@@ -16,30 +16,47 @@ class LookUPReasoningEngine:
 
     def get_causal_drivers(self, ticker, top_k=3):
         pyg_data = self.kg.to_pyg_data()
+        pyg_data = pyg_data.to(self.device)
+        
         with torch.no_grad():
             _, (edge_index, alpha) = self.kg.gnn_model(
                 pyg_data.x, pyg_data.edge_index, pyg_data.edge_attr, return_attention=True
             )
         
-        target_idx = self.kg.get_node_index(ticker)
-        if target_idx is None: return []
+        target_node_id = f"company_{ticker}"
+        if target_node_id not in self.kg.graph:
+            # Try direct if it's a commodity like XAUUSD
+            target_node_id = ticker
+            if target_node_id not in self.kg.graph: return []
 
+        target_idx = list(self.kg.graph.nodes).index(target_node_id)
+        
+        # 1. Get edges pointing to our specific ticker
         mask = (edge_index[1] == target_idx)
-        news_alphas = alpha[mask].mean(dim=-1).cpu().numpy()
+        relevant_alphas = alpha[mask].mean(dim=-1).cpu().numpy()
         relevant_edges = edge_index[:, mask].cpu().numpy()
 
         drivers = []
         node_list = list(self.kg.graph.nodes)
-        for i, weight in enumerate(news_alphas):
+        
+        for i, weight in enumerate(relevant_alphas):
             source_idx = relevant_edges[0, i]
             node_id = node_list[source_idx]
             node_data = self.kg.graph.nodes[node_id]
+            
+            # ✅ THE PRECISION FILTER: 
+            # Only accept if the node is 'news' AND actually has a 
+            # direct 'IMPACTS' relationship to THIS ticker in the NX graph.
             if node_data.get('type') == 'news':
-                drivers.append({
-                    'headline': node_data.get('label', 'Unknown Headline'),
-                    'impact_score': float(weight),
-                    'sentiment': node_data.get('sentiment', 0)
-                })
+                # Check if this news node was injected for THIS ticker
+                if self.kg.graph.has_edge(node_id, target_node_id):
+                    drivers.append({
+                        'headline': node_data.get('label', 'Unknown'),
+                        'impact_score': float(weight),
+                        'sentiment': node_data.get('sentiment', 0)
+                    })
+        
+        # Sort by weight and return
         return sorted(drivers, key=lambda x: x['impact_score'], reverse=True)[:top_k]
 
 class LookUPReporter:
@@ -74,14 +91,3 @@ class LookUPReporter:
             return response.text
         except Exception as e:
             return f"❌ Gemini API Error: {str(e)}"
-
-# --- Execution ---
-if __name__ == "__main__":
-    # Note: Ensure your KG is built/populated before calling this
-    reporter = LookUPReporter("NVDA")
-    report = reporter.generate_report()
-    
-    print("\n" + "="*40)
-    print(f"📈 LOOKUP CAUSAL REPORT: {reporter.ticker}")
-    print("="*40 + "\n")
-    print(report)
