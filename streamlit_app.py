@@ -1,21 +1,31 @@
 import re
-import streamlit as st
 import os
 import torch
+import streamlit as st
+import yfinance as yf
 from dotenv import load_dotenv
+
+# Internal module imports
 from src.graph.financial_kg import DynamicFinancialKG
 from src.inference.reasoning_engine import LookUPReporter
 
-# Page Config
-st.set_page_config(page_title="LookUP | AI Summary", page_icon="📈", layout="wide")
+# --- Page Config ---
+st.set_page_config(
+    page_title="LookUP | AI Summary", 
+    page_icon="📈", 
+    layout="wide"
+)
 load_dotenv()
 
 # --- CACHE THE MODEL (Prevent reloading on every click) ---
 @st.cache_resource
 def load_engine():
+    """
+    Initializes the Knowledge Graph and defines the model path.
+    Mapping query terms to tickers allows for commodity support.
+    """
     kg = DynamicFinancialKG()
     model_path = "calibrated_gnn_reasoning.pt"
-    # Note: If you want to use it for commodities, we map query terms to tickers
     return kg, model_path
 
 kg, model_path = load_engine()
@@ -25,56 +35,58 @@ st.title("📈 LookUP: Financial Reasoning")
 st.markdown("### Explain market movements using GNN-Attention & Gemini")
 
 # --- SEARCH BAR ---
-query = st.text_input("Ask about a stock or commodity:", placeholder="Why has the price of gold fallen?")
+query = st.text_input(
+    "Ask about a stock or commodity:", 
+    placeholder="Why has the price of gold fallen?"
+)
 
-# Mapping Logic for Commodities
-ticker_map = {
-    "sensex": "^BSESN",
-    "bse": "^BSESN",
-    "nifty": "^NSEI",
-    "gold": "XAUUSD",
-    "silver": "XAGUSD",
-    "nvidia": "NVDA",
-    "tesla": "TSLA",
-    "apple": "AAPL",
-    "microsoft": "MSFT",
-    "google": "GOOGL"
-}
-
-def extract_ticker(query):
-    # Remove punctuation and convert to lowercase
-    clean = re.sub(r'[^\w\s]', '', query.lower())
-    words = clean.split()
+def resolve_ticker(query):
+    """
+    Dynamically resolves a stock name or commodity to a Yahoo Finance Ticker.
+    Uses yfinance Search to avoid hardcoding.
+    """
+    stop_words = [
+        "why", "is", "has", "the", "price", "of", "fallen",
+        "risen", "today", "on", "what", "how", "situation", "in"
+    ]
     
-    # Check each word against the map
-    for word in words:
-        if word in ticker_map:
-            return ticker_map[word]
+    # Clean the query to get just the subject
+    query_words = [w for w in query.lower().split() if w not in stop_words]
+    clean_subject = " ".join(query_words)
     
-    # If no match, maybe the user typed a ticker directly (e.g., "AAPL")
-    # Check if the cleaned query itself might be a ticker (uppercase, 1-5 letters)
-    potential_ticker = clean.upper().strip()
-    if re.match(r'^[A-Z]{1,5}$', potential_ticker):
-        return potential_ticker
+    try:
+        search = yf.Search(clean_subject, max_results=1)
+        if search.quotes:
+            # The first result is usually the most relevant (e.g., "Apple" -> "AAPL")
+            best_match = search.quotes[0]
+            ticker = best_match['symbol']
+            name = best_match.get('shortname', best_match.get('longname', ticker))
+            return ticker, name
+    except Exception as e:
+        print(f"Ticker resolution failed: {e}")
     
-    # Otherwise, return None (invalid)
-    return None
+    return None, None
 
-
+# --- EXECUTION LOGIC ---
 if st.button("Analyze Causal Drivers"):
     if query:
-        target_ticker = extract_ticker(query)
+        target_ticker, display_name = resolve_ticker(query)
         
-        if target_ticker is None:
-            st.warning(f"Could not identify a valid ticker in your query. Please use a known name (e.g., 'sensex', 'gold', 'AAPL') or type a ticker directly.")
+        if not target_ticker:
+            st.warning(
+                "Could not identify the stock or commodity. Try being more "
+                "specific (e.g., 'Apple Inc' instead of just 'Apple')."
+            )
         else:
+            st.success(f"Resolved '{query}' to **{display_name}** ({target_ticker})")
+            
             with st.spinner(f"Building Knowledge Graph for {target_ticker}..."):
                 try:
-                    # 1. Build and Inject
+                    # 1. Build KG and Inject News
                     kg.build_for_tickers([target_ticker])
                     kg.inject_real_time_news(target_ticker)
                     
-                    # 2. Get Reasoning
+                    # 2. Get Reasoning Engine
                     reporter = LookUPReporter(kg, model_path)
                     top_drivers = reporter.engine.get_causal_drivers(target_ticker)
                     
@@ -82,10 +94,13 @@ if st.button("Analyze Causal Drivers"):
                     col1, col2 = st.columns([1, 1])
 
                     with col1:
-                        st.subheader("GNN Attention Mapping [Extracting relevant news]")
+                        st.subheader("GNN Attention Mapping")
+                        st.caption("Extracting high-influence news nodes")
+                        
                         if top_drivers:
                             for d in top_drivers:
-                                with st.expander(f"Score: {d['impact_score']:.4f} | {d['headline'][:50]}..."):
+                                label = f"Score: {d['impact_score']:.4f} | {d['headline'][:50]}..."
+                                with st.expander(label):
                                     st.write(f"**Full Headline:** {d['headline']}")
                                     st.write(f"**GNN Weight:** {d['impact_score']:.4f}")
                                     st.write(f"**Sentiment:** {d['sentiment']:.2f}")

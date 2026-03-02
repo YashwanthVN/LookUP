@@ -1,18 +1,41 @@
-import yfinance as yf
+import os
 import requests
+import yfinance as yf
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
-import os
 
 class UnifiedNewsFetcher:
-    # 🏛️ Define Global Macro Templates (used for boosting)
+    """
+    A multi-source news fetcher that retrieves financial news for stocks, 
+    commodities, and Indian market indices using Finnhub, NewsAPI, and yfinance.
+    """
+
+    # 🏛️ Global Macro Templates for sentiment boosting and keyword matching
     TEMPLATES = {
-        "^BSESN": ["Sensex crash", "Middle East war impact India", "crude oil price", "FII selling", "RBI policy", "NIFTY", "BANKNIFTY"],
-        "^NSEI": ["Nifty fall", "conflict India", "Oil price surge", "Indian stock market news", "Adani Reliance", "SENSEX", "BANKNIFTY", "Dalal Street news"],
-        "XAUUSD": ["geopolitics", "war", "central bank buying", "inflation", "Fed rate cuts", "unemployment", "safe-haven"],
-        "XAGUSD": ["industrial demand", "solar energy", "silver deficit", "inflation hedge", "geopolitical risk"],
-        "USO": ["OPEC+", "shale production", "Strait of Hormuz", "oil inventory", "global recession", "energy transition"],
-        "DEFAULT": ["market volatility", "macroeconomic data", "interest rates", "economic growth"]
+        "^BSESN": [
+            "Sensex crash", "Middle East war impact India", "crude oil price", 
+            "FII selling", "RBI policy", "NIFTY", "BANKNIFTY"
+        ],
+        "^NSEI": [
+            "Nifty fall", "conflict India", "Oil price surge", 
+            "Indian stock market news", "Adani Reliance", "SENSEX", 
+            "BANKNIFTY", "Dalal Street news"
+        ],
+        "XAUUSD": [
+            "geopolitics", "war", "central bank buying", "inflation", 
+            "Fed rate cuts", "unemployment", "safe-haven"
+        ],
+        "XAGUSD": [
+            "industrial demand", "solar energy", "silver deficit", 
+            "inflation hedge", "geopolitical risk"
+        ],
+        "USO": [
+            "OPEC+", "shale production", "Strait of Hormuz", 
+            "oil inventory", "global recession", "energy transition"
+        ],
+        "DEFAULT": [
+            "market volatility", "macroeconomic data", "interest rates", "economic growth"
+        ]
     }
 
     def __init__(self, finnhub_api_key: Optional[str] = None, newsapi_key: Optional[str] = None):
@@ -24,16 +47,15 @@ class UnifiedNewsFetcher:
     def fetch(self, ticker: str, limit: int = 10) -> List[Dict]:
         ticker_upper = ticker.upper()
 
-        # Indian indices
+        # Route request based on asset type
         if ticker_upper in ["^BSESN", "SENSEX", "^NSEI", "NIFTY"]:
             return self._fetch_indian_index(ticker_upper, limit)
 
-        # Commodities
         elif ticker_upper in ["XAUUSD", "XAGUSD", "USO"]:
             return self._fetch_commodity(ticker_upper, limit)
 
-        # Stocks – try Finnhub, fallback yfinance
         else:
+            # Stocks – try Finnhub first, fallback to yfinance
             news = self._fetch_finnhub(ticker_upper, limit)
             if news:
                 return news
@@ -44,7 +66,7 @@ class UnifiedNewsFetcher:
             print("⚠️ NewsAPI key not found. Falling back to yfinance search.")
             return self._fetch_yfinance_index_fallback(ticker, limit)
 
-        # Build query based on ticker
+        # Build specific query based on ticker
         if ticker in ["^BSESN", "SENSEX"]:
             query = "Sensex OR BSE Sensex OR S&P BSE Sensex"
         elif ticker in ["^NSEI", "NIFTY"]:
@@ -57,8 +79,11 @@ class UnifiedNewsFetcher:
             "apiKey": self.newsapi_key,
             "language": "en",
             "sortBy": "publishedAt",
-            "pageSize": limit * 2,  # fetch extra for filtering
-            "domains": "economictimes.indiatimes.com,moneycontrol.com,business-standard.com,livemint.com,financialexpress.com"
+            "pageSize": limit * 2,  # Fetch extra for relevance filtering
+            "domains": (
+                "economictimes.indiatimes.com,moneycontrol.com,"
+                "business-standard.com,livemint.com,financialexpress.com"
+            )
         }
 
         try:
@@ -67,10 +92,11 @@ class UnifiedNewsFetcher:
                 data = resp.json()
                 articles = data.get("articles", [])
                 headlines = []
+                relevant_keywords = ["sensex", "bse", "nifty", "nse", "indian market", "dalal street"]
+                
                 for art in articles:
                     title = art.get("title", "")
-                    # Relevance filter
-                    if any(kw in title.lower() for kw in ["sensex", "bse", "nifty", "nse", "indian market", "dalal street"]):
+                    if any(kw in title.lower() for kw in relevant_keywords):
                         headlines.append({
                             "headline": title,
                             "source": art.get("source", {}).get("name", "NewsAPI"),
@@ -82,16 +108,14 @@ class UnifiedNewsFetcher:
         except Exception as e:
             print(f"❌ NewsAPI exception: {e}")
 
-        # Fallback
         return self._fetch_yfinance_index_fallback(ticker, limit)
 
     def _fetch_yfinance_index_fallback(self, ticker: str, limit: int) -> List[Dict]:
         try:
-            # Use a broad search query
             search_query = "Sensex OR Nifty OR Indian stock market"
             results = yf.Search(search_query, max_results=limit).news
-            return [{'headline': n['title'], 'source': 'yfinance'} for n in results]
-        except:
+            return [{"headline": n["title"], "source": "yfinance"} for n in results]
+        except Exception:
             return []
 
     def _fetch_commodity(self, ticker: str, limit: int) -> List[Dict]:
@@ -103,8 +127,8 @@ class UnifiedNewsFetcher:
         query = commodity_map.get(ticker, "commodity market")
         try:
             results = yf.Search(query, max_results=limit).news
-            return [{'headline': n['title'], 'source': 'yfinance'} for n in results]
-        except:
+            return [{"headline": n["title"], "source": "yfinance"} for n in results]
+        except Exception:
             return []
 
     def _fetch_finnhub(self, ticker: str, limit: int) -> List[Dict]:
@@ -113,12 +137,23 @@ class UnifiedNewsFetcher:
         try:
             end = datetime.now().strftime('%Y-%m-%d')
             start = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
-            params = {'symbol': ticker, 'from': start, 'to': end, 'token': self.finnhub_key}
+            params = {
+                'symbol': ticker, 
+                'from': start, 
+                'to': end, 
+                'token': self.finnhub_key
+            }
             resp = requests.get(self.finnhub_url, params=params, timeout=10)
             if resp.status_code == 200:
                 data = resp.json()
-                return [{'headline': n.get('headline'), 'source': 'Finnhub', 'url': n.get('url')} for n in data[:limit]]
-        except:
+                return [
+                    {
+                        "headline": n.get("headline"), 
+                        "source": "Finnhub", 
+                        "url": n.get("url")
+                    } for n in data[:limit]
+                ]
+        except Exception:
             pass
         return []
 
@@ -126,6 +161,9 @@ class UnifiedNewsFetcher:
         try:
             ticker_obj = yf.Ticker(ticker)
             news = ticker_obj.news
-            return [{'headline': n.get('title'), 'source': 'yfinance'} for n in news[:limit]]
-        except:
+            return [
+                {"headline": n.get("title"), "source": "yfinance"} 
+                for n in news[:limit]
+            ]
+        except Exception:
             return []
