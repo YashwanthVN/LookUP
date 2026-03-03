@@ -120,13 +120,31 @@ class DynamicFinancialKG:
                 )
 
     def _get_correlation_weight(self, t1, t2):
+        """
+        Calculates Pearson correlation between two tickers with length safety checks.
+        """
         try:
             p1 = self.client.get_historical_prices(t1)
             p2 = self.client.get_historical_prices(t2)
+            
+            # --- FIX: Minimum length requirement for valid correlation ---
             if len(p1) < 5 or len(p2) < 5:
+                return 0.5  # Neutral fallback
+            
+            # Ensure we are comparing arrays of the same length
+            min_len = min(len(p1), len(p2))
+            
+            # Calculate correlation on the most recent overlapping window
+            correlation = np.corrcoef(p1[-min_len:], p2[-min_len:])[0, 1]
+            
+            # Handle potential NaNs from np.corrcoef (e.g., if one series is constant)
+            if np.isnan(correlation):
                 return 0.5
-            return max(0.1, np.corrcoef(p1[-20:], p2[-20:])[0, 1])
-        except Exception:
+                
+            return max(0.1, correlation)
+            
+        except Exception as e:
+            print(f"⚠️ Correlation calculation failed for {t1}-{t2}: {e}")
             return 0.5
 
     def _normalize_metrics(self):

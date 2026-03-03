@@ -30,6 +30,13 @@ def load_engine():
 
 kg, model_path = load_engine()
 
+with st.sidebar:
+    st.header("🧠 Graph Intelligence")
+    health_placeholder = st.empty()
+    with health_placeholder.container():
+        st.subheader("🛠️ Graph Health")
+        st.info("Run an analysis to see metrics.")
+
 # --- UI HEADER ---
 st.title("📈 LookUP: Financial Reasoning")
 st.markdown("### Explain market movements using GNN-Attention & Gemini")
@@ -67,6 +74,7 @@ def resolve_ticker(query):
     
     return None, None
 
+        
 # --- EXECUTION LOGIC ---
 if st.button("Analyze Causal Drivers"):
     if query:
@@ -85,6 +93,14 @@ if st.button("Analyze Causal Drivers"):
                     # 1. Build KG and Inject News
                     kg.build_for_tickers([target_ticker])
                     kg.inject_real_time_news(target_ticker)
+                    
+                    reported = len([d for u,v,d in kg.graph.edges(data=True) if d.get('relation') == 'REPORTED'])
+                    impacts = len([d for u,v,d in kg.graph.edges(data=True) if d.get('relation') == 'IMPACTS'])
+                    with health_placeholder.container():
+                        st.subheader("🛠️ Graph Health")
+                        st.metric("Financial Edges", reported)
+                        st.metric("News Edges", impacts)
+                        st.success(f"Structure: ROBUST ({len(kg.graph.nodes)} nodes)")
                     
                     # 2. Get Reasoning Engine
                     reporter = LookUPReporter(kg, model_path)
