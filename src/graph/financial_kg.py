@@ -256,7 +256,12 @@ class DynamicFinancialKG:
             if u in node_to_idx and v in node_to_idx:
                 edge_index.append([node_to_idx[u], node_to_idx[v]])
                 edge_attr.append([float(d.get('value', 1.0))])
-        
+
+                val = d.get('value')        # Handle non-value edges
+                if val is not None:
+                    edge_attr.append([float(val)])
+                else:
+                    edge_attr.append([0.0])
         if not edge_index:
             edge_index = torch.empty((2, 0), dtype=torch.long)
             edge_attr = torch.empty((0, 1), dtype=torch.float)
