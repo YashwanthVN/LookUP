@@ -226,47 +226,75 @@ class DynamicFinancialKG:
         print(f"✅ Injected {len(items)} news events for {ticker}")
 
     def get_node_index(self, label: str):
+        """
+        Robustly finds the integer index of a node based on its label or ticker.
+        Handles special characters (like ^), prefixes, and potential ValueErrors.
+        """
         node_list = list(self.graph.nodes)
+        target = str(label).strip()
+        
         try:
-            if label in self.METRIC_TYPES:
-                return node_list.index(f"metric_{label}")
+            # 1. Metric Match (Prioritize metric types for faster lookup)
+            if target in self.METRIC_TYPES:
+                metric_prefixed = f"metric_{target}"
+                if metric_prefixed in node_list:
+                    return node_list.index(metric_prefixed)
+
+            # 2. Exact Match (e.g., "company_AAPL" or "news_XAUUSD_1234")
+            if target in node_list:
+                return node_list.index(target)
+
+            # 3. Company Prefix Match (e.g., "^BSESN" -> "company_^BSESN")
+            company_prefixed = f"company_{target}"
+            if company_prefixed in node_list:
+                return node_list.index(company_prefixed)
+
+            # 4. Case-Insensitive Fallback (Last Resort)
+            target_lower = target.lower()
+            for i, node in enumerate(node_list):
+                if node.lower() == target_lower or node.lower() == f"company_{target_lower}":
+                    return i
             
-            if label in node_list:
-                return node_list.index(label)
-            
-            prefixed = f"company_{label}"
-            if prefixed in node_list:
-                return node_list.index(prefixed)
-                
             return None
+
         except ValueError:
+            # Caught if .index() fails despite the 'in' checks
             return None
 
     def to_pyg_data(self) -> Data:
         node_list = list(self.graph.nodes)
         node_to_idx = {n: i for i, n in enumerate(node_list)}
         
+        # 1. Node Features
         x = torch.tensor(
             [self.graph.nodes[n].get('feat', [0, 0, 0]) for n in node_list], 
             dtype=torch.float
         )
         
         edge_index, edge_attr = [], []
+        
+        # 2. Synchronized Edge and Attribute Construction
         for u, v, d in self.graph.edges(data=True):
             if u in node_to_idx and v in node_to_idx:
+                # Add exactly ONE edge
                 edge_index.append([node_to_idx[u], node_to_idx[v]])
-                edge_attr.append([float(d.get('value', 1.0))])
-
-                val = d.get('value')        # Handle non-value edges
+                
+                # Add exactly ONE attribute for that edge
+                val = d.get('value')
                 if val is not None:
                     edge_attr.append([float(val)])
                 else:
+                    # Default for structural edges (like VALID_AT)
                     edge_attr.append([0.0])
+        
+        # 3. Final Tensor Conversion
         if not edge_index:
             edge_index = torch.empty((2, 0), dtype=torch.long)
             edge_attr = torch.empty((0, 1), dtype=torch.float)
         else:
-            edge_index = torch.tensor(edge_index).t().contiguous()
+            # Ensure edge_index is (2, num_edges)
+            edge_index = torch.tensor(edge_index, dtype=torch.long).t().contiguous()
+            # Ensure edge_attr is (num_edges, 1)
             edge_attr = torch.tensor(edge_attr, dtype=torch.float)
         
         return Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
