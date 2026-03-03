@@ -8,6 +8,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from .gnn_agent import gnn_rag_agent
 from .competitor_agent import competitor_agent
 from .temporal_analyst import temporal_analyst
+from .retriever_agent import retriever_agent
 from .writer import writer_agent
 from .state import LOOKUPState
 
@@ -37,9 +38,12 @@ def coordinator_agent(state: LOOKUPState) -> dict:
     # 3. Standard Routing
     if "competitor" in query_lower or "rival" in query_lower:
         return {"next_step": "competitor", "tickers": tickers}
+    
+    if "news" in query_lower or "article" in query_lower or "information" in query_lower:
+        return {"next_step": "retriever"}
     return {"next_step": "gnn"}
 
-def route_next_agent(state: LOOKUPState) -> Literal["gnn", "temporal", "competitor", "write"]:
+def route_next_agent(state: LOOKUPState) -> Literal["gnn", "temporal", "competitor", "write", "retriever"]:
     # This must match the key returned by coordinator_agent
     return state.get("next_step", "write")
 
@@ -50,6 +54,7 @@ def create_graph():
     workflow.add_node("gnn", gnn_rag_agent)
     workflow.add_node("competitor", competitor_agent)   # <-- new node
     workflow.add_node("temporal", temporal_analyst)     # (stub)
+    workflow.add_node("retriever", retriever_agent)
     workflow.add_node("write", writer_agent)
 
     workflow.set_entry_point("coordinator")
@@ -61,6 +66,7 @@ def create_graph():
             "gnn": "gnn",
             "competitor": "competitor",
             "temporal": "temporal",
+            "retriever": "retriever",
             "write": "write"
         }
     )
@@ -68,5 +74,6 @@ def create_graph():
     workflow.add_edge("gnn", "write")
     workflow.add_edge("competitor", "write")
     workflow.add_edge("temporal", "write")
+    workflow.add_edge("retriever", "write")
     workflow.add_edge("write", END)
     return workflow.compile(checkpointer=MemorySaver())

@@ -26,7 +26,9 @@ class DynamicFinancialKG:
 
     def __init__(self, quarters: int = 4, api_key: Optional[str] = None):
         from src.streaming.financial_client import FMPClient
+        from src.retrieval.vector_store import VectorStore
         
+        self.vector_store = VectorStore()
         self.client = FMPClient(api_key)
         self.graph = nx.MultiDiGraph()
         self.quarters = quarters
@@ -222,6 +224,16 @@ class DynamicFinancialKG:
                 magnitude *= (1.0 + (0.5 * match_count))
 
             self.add_news_event(ticker, score, magnitude, headline)
+            self.vector_store.add_document(
+            headline,
+            metadata={
+                'ticker': ticker,
+                'sentiment': score,
+                'magnitude': magnitude,
+                'source': item.get('source', 'unknown'),
+                'timestamp': datetime.now().isoformat()
+            }
+        )
 
         print(f"✅ Injected {len(items)} news events for {ticker}")
 

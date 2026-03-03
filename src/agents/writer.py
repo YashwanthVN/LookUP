@@ -25,4 +25,10 @@ def writer_agent(state: LOOKUPState) -> dict:
     if comps:
         final_output += f"\n\n**🏢 Top Competitor Candidates:** {comps}"
         
+    docs = state.get("reranked_documents", [])
+    if docs:
+        docs_str = "\n".join([f"- {d}" for d in docs])
+        # FIXED: Changed final_report to final_output
+        final_output += f"\n\n**📑 Relevant Deep-Context Documents:**\n{docs_str}"
+        
     return {"final_report": final_output}
