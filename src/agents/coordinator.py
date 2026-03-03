@@ -16,21 +16,28 @@ from src.kg_holder import get_kg
 
 def coordinator_agent(state: LOOKUPState) -> dict:
     kg = get_kg()
-    if kg is None: return {"final_report": "Error: KG not found"}
-    
-    # 1. Build and Inject
-    kg.build_for_tickers(state["tickers"])
-    for ticker in state["tickers"]:
-        kg.inject_real_time_news(ticker)
-    
-    # 2. MATCHING LOGIC: Use 'next_step' as the decision key
     query_lower = state["query"].lower()
-    if any(x in query_lower for x in ["compare", "versus", "vs"]):
-        return {"next_step": "gnn"}
-    elif "trend" in query_lower:
-        return {"next_step": "temporal"}
-    else:
-        return {"next_step": "gnn"}
+    tickers = state["tickers"] # e.g., ["AAPL"]
+
+    # 1. PEER DISCOVERY: If it's a competitor query, add peers to the graph
+    if "competitor" in query_lower or "rival" in query_lower:
+        primary = tickers[0]
+        # In a real scenario, you'd use: peers = kg.client.get_peers(primary)
+        # For this week, let's ensure these 5 are always in the comparison set
+        peers = ["MSFT", "GOOGL", "NVDA", "AMZN"]
+        tickers = list(set(tickers + peers))
+    
+    # 2. Build KG for the expanded list
+    # This prevents the graph from having only 1 company node
+    kg.build_for_tickers(tickers)
+    
+    for t in tickers:
+        kg.inject_real_time_news(t)
+
+    # 3. Standard Routing
+    if "competitor" in query_lower or "rival" in query_lower:
+        return {"next_step": "competitor", "tickers": tickers}
+    return {"next_step": "gnn"}
 
 def route_next_agent(state: LOOKUPState) -> Literal["gnn", "temporal", "competitor", "write"]:
     # This must match the key returned by coordinator_agent
@@ -38,21 +45,28 @@ def route_next_agent(state: LOOKUPState) -> Literal["gnn", "temporal", "competit
 
 def create_graph():
     workflow = StateGraph(LOOKUPState)
+
     workflow.add_node("coordinator", coordinator_agent)
     workflow.add_node("gnn", gnn_rag_agent)
+    workflow.add_node("competitor", competitor_agent)   # <-- new node
+    workflow.add_node("temporal", temporal_analyst)     # (stub)
     workflow.add_node("write", writer_agent)
-    
+
     workflow.set_entry_point("coordinator")
-    
-    # The keys in this dictionary MUST match the strings returned by route_next_agent
+
     workflow.add_conditional_edges(
         "coordinator",
         route_next_agent,
         {
             "gnn": "gnn",
+            "competitor": "competitor",
+            "temporal": "temporal",
             "write": "write"
         }
     )
+
     workflow.add_edge("gnn", "write")
+    workflow.add_edge("competitor", "write")
+    workflow.add_edge("temporal", "write")
     workflow.add_edge("write", END)
     return workflow.compile(checkpointer=MemorySaver())

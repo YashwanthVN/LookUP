@@ -29,6 +29,5 @@ def gnn_rag_agent(state: LOOKUPState) -> dict:
     comps = [n.replace("company_", "") for n in all_nodes if n.startswith("company_") and ticker not in n]
 
     return {
-        "gnn_evidence": evidence, 
-        "competitor_candidates": comps
+        "gnn_evidence": evidence
     }
