@@ -14,6 +14,11 @@ def gnn_rag_agent(state: LOOKUPState) -> dict:
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
     model_path = os.path.join(project_root, "calibrated_gnn_reasoning.pt")
     
+    news_nodes = [n for n, d in kg.graph.nodes(data=True) if d.get('type') == 'news']
+    if not news_nodes:
+        # If no news found, the coordinator might have failed to inject
+        return {"gnn_evidence": ["⚠️ Warning: No news nodes found in Graph. Check API keys."]}
+    
     # 2. Use the PROVEN reporter from Phase 1
     # This automatically handles 'company_AAPL' and Index lookup
     from src.inference.reasoning_engine import LookUPReporter

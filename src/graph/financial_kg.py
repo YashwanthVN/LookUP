@@ -163,11 +163,12 @@ class DynamicFinancialKG:
             for e in edges:
                 e['value'] = (e['value'] - mean) / (std if std > 0 else 1.0)
 
-    def add_news_event(self, ticker, sentiment, magnitude, headline=None):
+    def add_news_event(self, ticker, sentiment, magnitude, headline, sector=None):
         news_id = f"news_{ticker}_{hash(headline) % 10000}"
         self.graph.add_node(
             news_id, 
             type="news", 
+            sector=sector,
             feat=[0.0, 0.0, 1.0],
             sentiment=float(sentiment), 
             label=str(headline)
@@ -200,7 +201,10 @@ class DynamicFinancialKG:
             probs = torch.nn.functional.softmax(logits, dim=-1)
 
         hints = fetcher.TEMPLATES.get(ticker.upper(), fetcher.TEMPLATES["DEFAULT"])
-        critical_triggers = ["strike", "war", "killed", "attack", "crash", "surge"]
+        critical_triggers = [
+            "strike", "war", "safety", "sales decline", "market share", 
+            "downgrade", "service issues", "record low", "dividend", "order book"
+        ]
 
         for idx, item in enumerate(items):
             headline = item['headline']
@@ -219,9 +223,9 @@ class DynamicFinancialKG:
             is_critical = any(trigger in headline_lower for trigger in critical_triggers)
 
             if is_critical:
-                magnitude *= 4.0
+                magnitude *= 3.0
             elif match_count > 0:
-                magnitude *= (1.0 + (0.5 * match_count))
+                magnitude *= (1.2 + (0.4 * match_count))
 
             self.add_news_event(ticker, score, magnitude, headline)
             self.vector_store.add_document(

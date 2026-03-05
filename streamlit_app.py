@@ -4,20 +4,23 @@ import torch
 import streamlit as st
 import yfinance as yf
 from dotenv import load_dotenv
+import requests
 
 # Internal module imports
 from src.graph.financial_kg import DynamicFinancialKG
 from src.inference.reasoning_engine import LookUPReporter
+from src.kg_holder import set_kg
+from src.agents.coordinator import create_graph
 
-# --- Page Config ---
+# --- PAGE CONFIG ---
 st.set_page_config(
-    page_title="LookUP | AI Summary", 
-    page_icon="📈", 
+    page_title="LookUP | AI Summary",
+    page_icon="📈",
     layout="wide"
 )
 load_dotenv()
 
-# --- CACHE THE MODEL (Prevent reloading on every click) ---
+# --- CACHE THE MODEL ---
 @st.cache_resource
 def load_engine():
     """
@@ -25,11 +28,37 @@ def load_engine():
     Mapping query terms to tickers allows for commodity support.
     """
     kg = DynamicFinancialKG()
+    set_kg(kg)
     model_path = "calibrated_gnn_reasoning.pt"
-    return kg, model_path
+    if os.path.exists(model_path):
+        kg.gnn_model.load_state_dict(torch.load(model_path, map_location='cpu'))
+        kg.gnn_model.eval()
+        
+    # Compile the LangGraph app
+    app = create_graph()
+    return kg, app
 
-kg, model_path = load_engine()
+kg, app = load_engine()
 
+# --- CACHE THE ANALYSIS RESULTS ---
+@st.cache_data(ttl=3600)  # Cache results for 1 hour to save API tokens
+def run_agentic_analysis(ticker, query):
+    """
+    Invokes the multi-agent graph with a consistent thread ID per ticker.
+    """
+    initial_state = {
+        "query": query,
+        "tickers": [ticker],
+        "competitor_candidates": [],
+        "gnn_evidence": [],
+        "reranked_documents": [],
+        "final_report": "",
+        "iteration_count": 0
+    }
+    # Using the ticker as the thread_id ensures continuity for that specific stock
+    return app.invoke(initial_state, config={"configurable": {"thread_id": ticker}})
+
+# --- SIDEBAR: GRAPH METRICS ---
 with st.sidebar:
     st.header("🧠 Graph Intelligence")
     health_placeholder = st.empty()
@@ -39,96 +68,107 @@ with st.sidebar:
 
 # --- UI HEADER ---
 st.title("📈 LookUP: Financial Reasoning")
-st.markdown("### Explain market movements using GNN-Attention & Gemini")
+st.markdown("### Explain market movements using GNN-Attention, Vector RAG & Gemini")
 
 # --- SEARCH BAR ---
 query = st.text_input(
-    "Ask about a stock or commodity:", 
+    "Ask about a stock or commodity:",
     placeholder="Why has the price of gold fallen?"
 )
 
 def resolve_ticker(query):
     """
-    Dynamically resolves a stock name or commodity to a Yahoo Finance Ticker.
-    Uses yfinance Search to avoid hardcoding.
+    Robust ticker resolution using Yahoo Finance's internal search API.
+    Handles company names, common abbreviations, and commodities.
     """
-    stop_words = [
-        "why", "is", "has", "the", "price", "of", "fallen",
-        "risen", "today", "on", "what", "how", "situation", "in"
-    ]
-    
-    # Clean the query to get just the subject
-    query_words = [w for w in query.lower().split() if w not in stop_words]
-    clean_subject = " ".join(query_words)
-    
+    # 1. Clean the query
+    stop_words = {"why", "is", "has", "the", "price", "of", "fallen", "risen", 
+                  "today", "on", "what", "how", "situation", "in", "about", "drop", "dropped"}
+    words = [w for w in query.lower().split() if w not in stop_words]
+    clean_subject = " ".join(words).strip()
+
+    if not clean_subject:
+        return None, None
+
     try:
-        search = yf.Search(clean_subject, max_results=1)
-        if search.quotes:
-            # The first result is usually the most relevant (e.g., "Apple" -> "AAPL")
+        search = yf.Search(clean_subject, max_results=5)
+        
+        if search.quotes and len(search.quotes) > 0:
+            # Prefer EQUITY or INDEX matches
+            for match in search.quotes:
+                symbol = match.get('symbol')
+                quote_type = match.get('quoteType')
+                
+                if quote_type in ['EQUITY', 'INDEX', 'CURRENCY']:
+                    name = match.get('shortname', match.get('longname', symbol))
+                    return symbol, name
+            
+            # Fallback to the first available result
             best_match = search.quotes[0]
-            ticker = best_match['symbol']
-            name = best_match.get('shortname', best_match.get('longname', ticker))
-            return ticker, name
+            return best_match['symbol'], best_match.get('shortname', best_match['symbol'])
+            
     except Exception as e:
-        print(f"Ticker resolution failed: {e}")
+        st.error(f"🔍 Ticker resolution error: {e}")
     
     return None, None
 
-        
 # --- EXECUTION LOGIC ---
 if st.button("Analyze Causal Drivers"):
     if query:
         target_ticker, display_name = resolve_ticker(query)
         
-        if not target_ticker:
-            st.warning(
-                "Could not identify the stock or commodity. Try being more "
-                "specific (e.g., 'Apple Inc' instead of just 'Apple')."
-            )
+        if target_ticker is None:
+            st.warning("Could not identify the stock. Please try a specific ticker like 'AAPL'.")
         else:
-            st.success(f"Resolved '{query}' to **{display_name}** ({target_ticker})")
+            st.success(f"Resolved to **{display_name}** ({target_ticker})")
             
-            with st.spinner(f"Building Knowledge Graph for {target_ticker}..."):
+            with st.spinner(f"Running Multi-Agent Analysis for {target_ticker}..."):
                 try:
-                    # 1. Build KG and Inject News
-                    kg.build_for_tickers([target_ticker])
-                    kg.inject_real_time_news(target_ticker)
-                    
+                    # 1. Invoke the Cached Multi-Agent Workflow
+                    result = run_agentic_analysis(target_ticker, query)
+
+                    # 2. Update Sidebar Stats (Reflects state of global KG)
                     reported = len([d for u,v,d in kg.graph.edges(data=True) if d.get('relation') == 'REPORTED'])
                     impacts = len([d for u,v,d in kg.graph.edges(data=True) if d.get('relation') == 'IMPACTS'])
                     with health_placeholder.container():
                         st.subheader("🛠️ Graph Health")
                         st.metric("Financial Edges", reported)
                         st.metric("News Edges", impacts)
-                        st.success(f"Structure: ROBUST ({len(kg.graph.nodes)} nodes)")
-                    
-                    # 2. Get Reasoning Engine
-                    reporter = LookUPReporter(kg, model_path)
-                    top_drivers = reporter.engine.get_causal_drivers(target_ticker)
-                    
-                    # --- UI LAYOUT ---
-                    col1, col2 = st.columns([1, 1])
+                        st.success(f"Nodes: {len(kg.graph.nodes)}")
+
+                    # --- PROFESSIONAL UI LAYOUT ---
+                    st.markdown(f"## 🔎 LookUP Analysis: {display_name} ({target_ticker})")
+
+                    # A. Top Level Report (Gemini's Synthesis)
+                    st.info(result.get("final_report", "No report generated."))
+
+                    # B. Specialist Data Columns
+                    col1, col2 = st.columns(2)
 
                     with col1:
-                        st.subheader("GNN Attention Mapping")
-                        st.caption("Extracting high-influence news nodes")
-                        
-                        if top_drivers:
-                            for d in top_drivers:
-                                label = f"Score: {d['impact_score']:.4f} | {d['headline'][:50]}..."
-                                with st.expander(label):
-                                    st.write(f"**Full Headline:** {d['headline']}")
-                                    st.write(f"**GNN Weight:** {d['impact_score']:.4f}")
-                                    st.write(f"**Sentiment:** {d['sentiment']:.2f}")
-                                    st.progress(min(d['impact_score'] * 2, 1.0))
-                        else:
-                            st.warning("No significant news drivers found.")
+                        with st.expander("🧠 GNN Causal Drivers (Attention Mapping)", expanded=True):
+                            evidence = result.get("gnn_evidence", [])
+                            if evidence:
+                                for insight in evidence:
+                                    st.write(f"• {insight}")
+                            else:
+                                st.write("No high-influence GNN drivers identified.")
 
                     with col2:
-                        st.subheader("AI Summary Analysis")
-                        report = reporter.generate_report(target_ticker)
-                        st.info(report)
-                        
+                        with st.expander("📑 Top Relevant Documents (Vector RAG)", expanded=True):
+                            docs = result.get("reranked_documents", [])
+                            if docs:
+                                for doc in docs:
+                                    st.write(f"• {doc}")
+                            else:
+                                st.write("No deep-context documents retrieved.")
+
+                    # C. Competitor Cloud
+                    comps = result.get("competitor_candidates", [])
+                    if comps:
+                        st.markdown("### 🏢 Peer Comparison (GNN Proximity)")
+                        st.write(" | ".join([f"**{c}**" for c in comps]))
+
                 except Exception as e:
                     st.error(f"Analysis failed: {e}")
     else:
@@ -136,4 +176,4 @@ if st.button("Analyze Causal Drivers"):
 
 # --- FOOTER ---
 st.divider()
-st.caption("LookUP v1.0 | Built with PyTorch Geometric, NetworkX, and Gemini Pro")
+st.caption("LookUP v1.0 | Multi-Agent Graph RAG (GNN + Vector Store + Gemini Pro)")

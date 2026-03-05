@@ -23,6 +23,9 @@ class VectorStore:
             metadata={"hnsw:space": "cosine"}
         )
 
+    def clear_all(self):
+        self.collection.delete(where={})
+    
     def add_document(self, headline: str, metadata: Dict[str, Any]):
         doc_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, headline + str(metadata.get('ticker', ''))))
         self.collection.upsert(
@@ -30,7 +33,7 @@ class VectorStore:
             metadatas=[metadata],
             documents=[headline]
         )
-
+    
     def search(self, query: str, n_results: int = 10) -> List[Dict]:
         """
         Search for documents similar to the query.

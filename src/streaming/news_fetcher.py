@@ -41,14 +41,28 @@ class UnifiedNewsFetcher:
     def __init__(self, finnhub_api_key: Optional[str] = None, newsapi_key: Optional[str] = None):
         self.finnhub_key = finnhub_api_key or os.getenv("FINNHUB_API_KEY")
         self.newsapi_key = newsapi_key or os.getenv("NEWSAPI_KEY")
+        self.gnews_key = os.getenv("GNEWS_API_KEY")
         self.finnhub_url = "https://finnhub.io/api/v1/company-news"
         self.newsapi_url = "https://newsapi.org/v2/everything"
 
     def fetch(self, ticker: str, limit: int = 10) -> List[Dict]:
         ticker_upper = ticker.upper()
 
+        if ".NS" in ticker_upper or ".BO" in ticker_upper:
+            try:
+                ticker_obj = yf.Ticker(ticker_upper)
+                company_name = ticker_obj.info.get('longName', ticker_upper)
+                news = self._fetch_gnews_india(company_name, limit)
+                if news:
+                    return news
+                # Fallback to yfinance name search if GNews returns nothing
+                return self._fetch_yfinance(ticker_upper, limit)
+            except Exception as e:
+                print(f"⚠️ Error resolving Indian company name: {e}")
+                return self._fetch_yfinance(ticker_upper, limit)
+        
         # Route request based on asset type
-        if ticker_upper in ["^BSESN", "SENSEX", "^NSEI", "NIFTY"]:
+        elif ticker_upper in ["^BSESN", "SENSEX", "^NSEI", "NIFTY"]:
             return self._fetch_indian_index(ticker_upper, limit)
 
         elif ticker_upper in ["XAUUSD", "XAGUSD", "USO"]:
@@ -60,6 +74,27 @@ class UnifiedNewsFetcher:
             if news:
                 return news
             return self._fetch_yfinance(ticker_upper, limit)
+        
+    def _fetch_gnews_india(self, query: str, limit: int = 10) -> List[Dict]:
+        """
+        Scrapes regional Indian news using GNews. 
+        Ideal for OLAELEC.BO, COALINDIA.NS, etc.
+        """
+        if not self.gnews_key:
+            return []
+            
+        url = f"https://gnews.io/api/v4/search?q={query}&lang=en&country=in&max={limit}&apikey={self.gnews_key}"
+        
+        try:
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                articles = response.json().get("articles", [])
+                return [{"headline": a["title"], "source": a["source"]["name"]} for a in articles]
+            else:
+                print(f"❌ GNews API error {response.status_code}")
+        except Exception as e:
+            print(f"❌ GNews Error: {e}")
+        return []
 
     def _fetch_indian_index(self, ticker: str, limit: int) -> List[Dict]:
         if not self.newsapi_key:
@@ -161,9 +196,19 @@ class UnifiedNewsFetcher:
         try:
             ticker_obj = yf.Ticker(ticker)
             news = ticker_obj.news
+            
+            # If direct ticker news is empty (Common for India), try a Name Search
+            if not news:
+                # Get the long name (e.g., "Bharat Electronics Limited")
+                company_name = ticker_obj.info.get('longName')
+                if company_name:
+                    print(f"🔍 Ticker news empty. Searching by name: {company_name}")
+                    news = yf.Search(company_name, max_results=limit).news
+            
             return [
                 {"headline": n.get("title"), "source": "yfinance"} 
                 for n in news[:limit]
             ]
-        except Exception:
+        except Exception as e:
+            print(f"❌ yfinance fetch failed: {e}")
             return []

@@ -1,3 +1,4 @@
+'''
 from .state import LOOKUPState
 from src.inference.reasoning_engine import LookUPReporter
 from src.kg_holder import get_kg
@@ -32,3 +33,41 @@ def writer_agent(state: LOOKUPState) -> dict:
         final_output += f"\n\n**📑 Relevant Deep-Context Documents:**\n{docs_str}"
         
     return {"final_report": final_output}
+'''
+
+# LLM Bypass 
+
+from .state import LOOKUPState
+from src.kg_holder import get_kg
+import os
+
+def writer_agent(state: LOOKUPState) -> dict:
+    kg = get_kg()
+    primary_ticker = state["tickers"][0]
+    
+    # 1. Create the Debug Header
+    manual_summary = f"### 🛠️ Technical Debug Summary for {primary_ticker}\n"
+    manual_summary += "*LLM reasoning engine is currently in **OFFLINE** mode to save tokens.*\n\n"
+    
+    # 2. Extract and append GNN Evidence
+    insights = state.get("gnn_evidence", [])
+    manual_summary += "**🧠 Raw GNN Causal Drivers:**\n"
+    if insights:
+        manual_summary += "\n".join([f"- {i}" for i in insights])
+    else:
+        manual_summary += "No GNN drivers identified.\n"
+    
+    # 3. Extract and append Competitors
+    comps = state.get("competitor_candidates", [])
+    if comps:
+        manual_summary += f"\n\n**🏢 Top Competitor Candidates (GNN Similarity):**\n{', '.join(comps)}"
+        
+    # 4. Extract and append Reranked Documents
+    docs = state.get("reranked_documents", [])
+    if docs:
+        manual_summary += "\n\n**📑 Relevant Deep-Context Documents (Vector RAG):**\n"
+        manual_summary += "\n".join([f"- {d}" for d in docs])
+    else:
+        manual_summary += "\n\n**📑 Vector RAG:** No deep-context documents retrieved."
+        
+    return {"final_report": manual_summary}

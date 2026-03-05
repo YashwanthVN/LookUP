@@ -17,30 +17,57 @@ from src.kg_holder import get_kg
 
 def coordinator_agent(state: LOOKUPState) -> dict:
     kg = get_kg()
+    
+    kg.graph.clear()
+    try:
+        # Get all existing IDs in the collection
+        existing_data = kg.vector_store.collection.get()
+        if existing_data['ids']:
+            kg.vector_store.collection.delete(ids=existing_data['ids'])
+    except Exception as e:
+        print(f"⚠️ Vector store clear skipped or failed: {e}")
+    
     query_lower = state["query"].lower()
-    tickers = state["tickers"] # e.g., ["AAPL"]
+    tickers = state["tickers"]
+    primary = state["tickers"][0]
+    
+    if "news" in query_lower or "how is" in query_lower:
+        # Transform "how is Ola" -> "Ola Electric Mobility stock performance news March 2026"
+        expanded_query = f"{primary} stock analysis financial news March 2026"
+        state["query"] = expanded_query
+        return {"next_step": "retriever", "query": expanded_query}
 
-    # 1. PEER DISCOVERY: If it's a competitor query, add peers to the graph
     if "competitor" in query_lower or "rival" in query_lower:
-        primary = tickers[0]
-        # In a real scenario, you'd use: peers = kg.client.get_peers(primary)
-        # For this week, let's ensure these 5 are always in the comparison set
-        peers = ["MSFT", "GOOGL", "NVDA", "AMZN"]
-        tickers = list(set(tickers + peers))
-    
-    # 2. Build KG for the expanded list
-    # This prevents the graph from having only 1 company node
+        try:
+            # Dynamic Peer Discovery
+            ticker_obj = yf.Ticker(primary)
+            sector = ticker_obj.info.get('sector', '')
+            
+            # Fallback Peer Lists per Sector
+            if "Aerospace" in sector or primary == "BA":
+                peers = ["LMT", "RTX", "NOC", "GD"]
+            elif "Technology" in sector:
+                peers = ["MSFT", "GOOGL", "NVDA", "AAPL"]
+            else:
+                # If sector unknown, use basic market leaders as anchors
+                peers = ["SPY", "QQQ"] 
+                
+            tickers = list(set(tickers + peers))
+        except:
+            pass 
+
+    # QUERY EXPANSION: Broden the search for the retriever
+    if "retriever" in state.get("next_step", "") or "how is" in query_lower:
+        state["query"] = f"{primary} stock analysis performance news 2026"
+
+    # Build KG and Inject
     kg.build_for_tickers(tickers)
-    
     for t in tickers:
         kg.inject_real_time_news(t)
 
-    # 3. Standard Routing
     if "competitor" in query_lower or "rival" in query_lower:
         return {"next_step": "competitor", "tickers": tickers}
     
-    if "news" in query_lower or "article" in query_lower or "information" in query_lower:
-        return {"next_step": "retriever"}
     return {"next_step": "gnn"}
 
 def route_next_agent(state: LOOKUPState) -> Literal["gnn", "temporal", "competitor", "write", "retriever"]:

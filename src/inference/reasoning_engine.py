@@ -15,49 +15,63 @@ class LookUPReasoningEngine:
         self.kg.gnn_model.eval()
 
     def get_causal_drivers(self, ticker, top_k=3):
-        pyg_data = self.kg.to_pyg_data()
-        pyg_data = pyg_data.to(self.device)
-        
-        with torch.no_grad():
-            _, (edge_index, alpha) = self.kg.gnn_model(
-                pyg_data.x, pyg_data.edge_index, pyg_data.edge_attr, return_attention=True
-            )
-        
-        target_node_id = f"company_{ticker}"
-        if target_node_id not in self.kg.graph:
-            # Try direct if it's a commodity like XAUUSD
-            target_node_id = ticker
-            if target_node_id not in self.kg.graph: return []
-
-        target_idx = list(self.kg.graph.nodes).index(target_node_id)
-        
-        # 1. Get edges pointing to our specific ticker
-        mask = (edge_index[1] == target_idx)
-        relevant_alphas = alpha[mask].mean(dim=-1).cpu().numpy()
-        relevant_edges = edge_index[:, mask].cpu().numpy()
-
-        drivers = []
-        node_list = list(self.kg.graph.nodes)
-        
-        for i, weight in enumerate(relevant_alphas):
-            source_idx = relevant_edges[0, i]
-            node_id = node_list[source_idx]
-            node_data = self.kg.graph.nodes[node_id]
+        import traceback
+        try:
+            pyg_data = self.kg.to_pyg_data()
+            pyg_data = pyg_data.to(self.device)
             
-            # ✅ THE PRECISION FILTER: 
-            # Only accept if the node is 'news' AND actually has a 
-            # direct 'IMPACTS' relationship to THIS ticker in the NX graph.
-            if node_data.get('type') == 'news':
-                # Check if this news node was injected for THIS ticker
-                if self.kg.graph.has_edge(node_id, target_node_id):
+            with torch.no_grad():
+                # Your model returns: z, (edge_index, alpha)
+                _, (edge_index, alpha) = self.kg.gnn_model(
+                    pyg_data.x, pyg_data.edge_index, pyg_data.edge_attr, return_attention=True
+                )
+
+            # Safeguard 1: Dimension check for Alpha
+            # If alpha is 1D (unlikely but possible in some PyG versions), .mean(-1) will fail
+            if alpha.dim() < 2:
+                print(f"DEBUG: alpha has unexpected dimensions: {alpha.shape}")
+                return []
+
+            node_list = list(self.kg.graph.nodes)
+            target_node_id = f"company_{ticker}"
+            
+            # Robust node finding
+            if target_node_id not in node_list:
+                target_node_id = ticker
+            if target_node_id not in node_list:
+                return []
+
+            target_idx = node_list.index(target_node_id)
+            
+            # Safeguard 2: Edge Mask check
+            mask = (edge_index[1] == target_idx)
+            if mask.sum() == 0:
+                print(f"DEBUG: No edges pointing to target {ticker}")
+                return []
+
+            # Reduce attention heads to a single scalar weight per edge
+            relevant_alphas = alpha[mask].mean(dim=-1).cpu().numpy()
+            relevant_edges = edge_index[:, mask].cpu().numpy()
+
+            drivers = []
+            for i, weight in enumerate(relevant_alphas):
+                source_idx = relevant_edges[0, i]
+                node_id = node_list[source_idx]
+                node_data = self.kg.graph.nodes[node_id]
+                
+                # Only include news nodes that are explicitly linked
+                if node_data.get('type') == 'news':
                     drivers.append({
                         'headline': node_data.get('label', 'Unknown'),
                         'impact_score': float(weight),
                         'sentiment': node_data.get('sentiment', 0)
                     })
-        
-        # Sort by weight and return
-        return sorted(drivers, key=lambda x: x['impact_score'], reverse=True)[:top_k]
+            
+            return sorted(drivers, key=lambda x: x['impact_score'], reverse=True)[:top_k]
+        except Exception as e:
+            print("❌ ERROR in get_causal_drivers:")
+            traceback.print_exc()
+            return []
 
 class LookUPReporter:
     def __init__(self, kg, model_path):
