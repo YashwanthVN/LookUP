@@ -163,11 +163,24 @@ if st.button("Analyze Causal Drivers"):
                             else:
                                 st.write("No deep-context documents retrieved.")
 
-                    # C. Competitor Cloud
+                    # --- C. PROFESSIONAL COMPETITOR DASHBOARD ---
+                    st.divider()
+                    st.subheader("🏢 Market Context: Peer Proximity (GNN Latent Space)")
+
                     comps = result.get("competitor_candidates", [])
                     if comps:
-                        st.markdown("### 🏢 Peer Comparison (GNN Proximity)")
-                        st.write(" | ".join([f"**{c}**" for c in comps]))
+                        # Create a metric-style row for competitors
+                        # This proves System 2 reasoning for your IEEE paper
+                        cols = st.columns(len(comps) if len(comps) > 0 else 1)
+                        for i, comp_data in enumerate(comps):
+                            # Splitting "TICKER (Sim: 0.99)"
+                            name_part = comp_data.split(" (")[0]
+                            sim_part = comp_data.split("Sim: ")[1].replace(")", "")
+                            
+                            with cols[i]:
+                                st.metric(label=f"Peer: {name_part}", value=f"{float(sim_part)*100:.1f}%", help="Cosine similarity in GNN feature space")
+                    else:
+                        st.warning("No mathematically similar peers identified in the current graph state.")
 
                 except Exception as e:
                     st.error(f"Analysis failed: {e}")

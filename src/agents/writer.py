@@ -42,32 +42,34 @@ from src.kg_holder import get_kg
 import os
 
 def writer_agent(state: LOOKUPState) -> dict:
-    kg = get_kg()
     primary_ticker = state["tickers"][0]
     
-    # 1. Create the Debug Header
+    # Header
     manual_summary = f"### 🛠️ Technical Debug Summary for {primary_ticker}\n"
-    manual_summary += "*LLM reasoning engine is currently in **OFFLINE** mode to save tokens.*\n\n"
+    manual_summary += "*LLM reasoning engine is currently in **OFFLINE** mode.*\n\n"
     
-    # 2. Extract and append GNN Evidence
+    # 1. GNN Causal Drivers
     insights = state.get("gnn_evidence", [])
     manual_summary += "**🧠 Raw GNN Causal Drivers:**\n"
     if insights:
         manual_summary += "\n".join([f"- {i}" for i in insights])
     else:
         manual_summary += "No GNN drivers identified.\n"
-    
-    # 3. Extract and append Competitors
+
+    # 2. Competitor/Peer Proximity
     comps = state.get("competitor_candidates", [])
     if comps:
-        manual_summary += f"\n\n**🏢 Top Competitor Candidates (GNN Similarity):**\n{', '.join(comps)}"
+        manual_summary += f"\n\n**🏢 GNN Peer Proximity (System 2):**\n"
+        manual_summary += " | ".join([f"`{c}`" for c in comps])
+    else:
+        manual_summary += "\n\n**🏢 GNN Peer Proximity:** No candidates found (Graph too sparse)."
         
-    # 4. Extract and append Reranked Documents
+    # 3. Vector RAG Results
     docs = state.get("reranked_documents", [])
     if docs:
-        manual_summary += "\n\n**📑 Relevant Deep-Context Documents (Vector RAG):**\n"
+        manual_summary += f"\n\n**📑 Relevant Deep-Context Documents:**\n"
         manual_summary += "\n".join([f"- {d}" for d in docs])
     else:
-        manual_summary += "\n\n**📑 Vector RAG:** No deep-context documents retrieved."
+        manual_summary += "\n\n**📑 Vector RAG:** No documents retrieved."
         
     return {"final_report": manual_summary}
