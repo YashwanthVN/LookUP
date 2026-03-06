@@ -176,19 +176,66 @@ class DynamicFinancialKG:
         self.graph.add_edge(news_id, f"company_{ticker}", relation="IMPACTS", value=magnitude)
 
     def inject_real_time_news(self, ticker: str):
+        """
+        Tries multiple strategies to fetch news, only accepting a strategy if it yields valid headlines.
+        """
         fetcher = UnifiedNewsFetcher()
-        items = fetcher.fetch(ticker, limit=12)
+        base_symbol = ticker.split('.')[0].upper()
         
-        if not items:
-            print(f"⚠️ No news items found for {ticker}")
-            return
+        search_strategies = [
+            ticker,                # 1. OLAELEC.NS
+            f"{base_symbol}.BO",   # 2. OLAELEC.BO
+            base_symbol            # 3. OLAELEC
+        ]
 
-        headlines = [item['headline'] for item in items if item.get('headline')]
+        headlines = []
+        actual_query_used = None
+        raw_items = []  # we may need original items later for source info
+
+        # --- Try ticker-based strategies ---
+        for query in search_strategies:
+            try:
+                print(f"📡 System 2 Discovery: Attempting news for '{query}'...")
+                items = fetcher.fetch(query, limit=12)
+                # Extract headlines that are non-empty
+                candidate_headlines = [item['headline'] for item in items if item.get('headline')]
+                if candidate_headlines:
+                    headlines = candidate_headlines
+                    raw_items = items  # keep the full items for later (maybe source, etc.)
+                    actual_query_used = query
+                    print(f"✅ News headlines acquired via: {query}")
+                    break
+                else:
+                    print(f"⚠️ No valid headlines for '{query}'. Trying next...")
+            except Exception as e:
+                print(f"❌ Error for '{query}': {e}. Moving to next strategy...")
+                continue
+
+        # --- Final fallback: company name search via yfinance ---
         if not headlines:
-            print("⚠️ No valid headlines to analyze.")
+            try:
+                print(f"📡 Final attempt: Searching by company name for {ticker}...")
+                # Get company name from yfinance
+                yf_ticker = yf.Ticker(ticker)
+                company_name = yf_ticker.info.get('longName')
+                if company_name:
+                    # Use yfinance Search with the company name
+                    search_results = yf.Search(company_name, max_results=12).news
+                    candidate_headlines = [n.get('title') for n in search_results if n.get('title')]
+                    if candidate_headlines:
+                        headlines = candidate_headlines
+                        # Create pseudo items for consistency (we don't have full metadata)
+                        raw_items = [{'headline': h, 'source': 'yfinance_name_search'} for h in headlines]
+                        actual_query_used = f"name_search:{company_name}"
+                        print(f"✅ News found via company name: {company_name}")
+            except Exception as e:
+                print(f"❌ Company name search failed: {e}")
+
+        if not headlines:
+            print(f"❌ Critical: No news found for {ticker} after all strategies.")
             return
 
-        # Tokenize for batch sentiment
+        # --- Sentiment processing (using headlines list) ---
         inputs = self.tokenizer(
             headlines, return_tensors="pt", truncation=True, padding=True, max_length=512
         )
@@ -200,46 +247,35 @@ class DynamicFinancialKG:
             logits = self.sentiment_model(**inputs).logits
             probs = torch.nn.functional.softmax(logits, dim=-1)
 
-        hints = fetcher.TEMPLATES.get(ticker.upper(), fetcher.TEMPLATES["DEFAULT"])
-        critical_triggers = [
-            "strike", "war", "safety", "sales decline", "market share", 
-            "downgrade", "service issues", "record low", "dividend", "order book"
-        ]
+        hints = fetcher.TEMPLATES.get(base_symbol, fetcher.TEMPLATES["DEFAULT"])
+        critical_triggers = ["strike", "war", "safety", "sales decline", "market share", "downgrade"]
 
-        for idx, item in enumerate(items):
-            headline = item['headline']
-            if not headline:
-                continue
-
-            # Sentiment score (FinBERT: 0=neutral, 1=positive, 2=negative)
+        # --- Inject each headline as a news node ---
+        for idx, headline in enumerate(headlines):
+            # The corresponding raw item might be in raw_items; we'll use index to get source if needed
+            source = raw_items[idx].get('source', 'unknown') if idx < len(raw_items) else 'unknown'
             score = probs[idx][1].item() - probs[idx][2].item()
             headline_lower = headline.lower()
-
-            # Base magnitude
             magnitude = abs(score) * 2.0 + 0.5
 
-            # Boosting
-            match_count = sum(1 for hint in hints if hint.lower() in headline_lower)
             is_critical = any(trigger in headline_lower for trigger in critical_triggers)
-
             if is_critical:
                 magnitude *= 3.0
-            elif match_count > 0:
-                magnitude *= (1.2 + (0.4 * match_count))
 
             self.add_news_event(ticker, score, magnitude, headline)
             self.vector_store.add_document(
-            headline,
-            metadata={
-                'ticker': ticker,
-                'sentiment': score,
-                'magnitude': magnitude,
-                'source': item.get('source', 'unknown'),
-                'timestamp': datetime.now().isoformat()
-            }
-        )
+                headline,
+                metadata={
+                    'ticker': ticker,
+                    'sentiment': score,
+                    'magnitude': magnitude,
+                    'timestamp': datetime.now().isoformat(),
+                    'query_source': actual_query_used,
+                    'source': source
+                }
+            )
 
-        print(f"✅ Injected {len(items)} news events for {ticker}")
+        print(f"✅ Successfully Injected {len(headlines)} news events for {ticker} (Source: {actual_query_used})")
 
     def get_node_index(self, label: str):
         """
