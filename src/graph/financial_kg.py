@@ -54,7 +54,7 @@ class DynamicFinancialKG:
             hidden=64, 
             out=32
         )
-        print("🧠 Reasoning GNN initialized.")
+        print("Reasoning GNN initialized.")
 
     def build_for_tickers(self, tickers: List[str]):
         self.graph.clear()
@@ -183,9 +183,9 @@ class DynamicFinancialKG:
         base_symbol = ticker.split('.')[0].upper()
         
         search_strategies = [
-            ticker,                # 1. OLAELEC.NS
-            f"{base_symbol}.BO",   # 2. OLAELEC.BO
-            base_symbol            # 3. OLAELEC
+            ticker,                
+            f"{base_symbol}.BO",   
+            base_symbol            
         ]
 
         headlines = []
@@ -195,7 +195,7 @@ class DynamicFinancialKG:
         # --- Try ticker-based strategies ---
         for query in search_strategies:
             try:
-                print(f"📡 System 2 Discovery: Attempting news for '{query}'...")
+                print(f"System 2 Discovery: Attempting news for '{query}'...")
                 items = fetcher.fetch(query, limit=12)
                 # Extract headlines that are non-empty
                 candidate_headlines = [item['headline'] for item in items if item.get('headline')]
