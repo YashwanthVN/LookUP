@@ -4,15 +4,15 @@ langchain-core>=0.3.0
 langchain-openai>=0.3.0
 langchain-community>=0.3.0
 
-# Hugging Face & Fine-Tuning (New)
+# Hugging Face & Fine-Tuning
 transformers>=4.40.0
-peft>=0.10.0           # Parameter-Efficient Fine-Tuning (LoRA)
-accelerate>=0.29.0     # Optimized model loading/inference
-bitsandbytes>=0.43.0   # 8-bit/4-bit quantization support
-safetensors>=0.4.3     # Secure weight loading
+peft>=0.10.0
+accelerate>=0.29.0
+bitsandbytes>=0.43.0
+safetensors>=0.4.3
 
 # Graph Neural Networks
-# torch>=2.2.0         # Base requirement for GNNs & Transformers
+# torch>=2.2.0   # manually install based on your system (CPU/GPU)
 torch-geometric>=2.6.0
 torch-geometric-temporal>=0.54.0
 networkx>=3.2.1
@@ -20,7 +20,6 @@ networkx>=3.2.1
 # Financial data
 yfinance>=0.2.50
 mcp>=0.1.0
-# yfnhanced-mcp will be installed via npm, not pip
 finnhub-python>=2.4.19
 
 # Reranker
@@ -30,6 +29,11 @@ sentence-transformers>=3.0.0
 # Vector storage
 qdrant-client>=1.9.0
 chromadb>=0.5.0
+
+# Backend API (FastAPI + Uvicorn)
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
 
 # Utilities
 pydantic>=2.7.0
@@ -45,5 +49,5 @@ pytest>=8.0.0
 black>=24.0.0
 ruff>=0.3.0
 
-#News API
+# News API
 newsapi-python>=0.2.6

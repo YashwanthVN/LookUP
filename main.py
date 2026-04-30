@@ -74,4 +74,4 @@ if __name__ == "__main__":
     try:
         run_lookup_analysis(args.ticker.upper())
     except Exception as e:
-        print(f"💥 An error occurred: {e}")
+        print(f" An error occurred: {e}")

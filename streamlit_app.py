@@ -68,7 +68,7 @@ with st.sidebar:
 
 # --- UI HEADER ---
 st.title("📈 LookUP: Financial Reasoning")
-st.markdown("### Explain market movements using GNN-Attention, Vector RAG & Gemini")
+st.markdown("### Explain market movements using GNN-Attention, Vector RAG & Gemini for LLM")
 
 # --- SEARCH BAR ---
 query = st.text_input(
@@ -189,4 +189,4 @@ if st.button("Analyze Causal Drivers"):
 
 # --- FOOTER ---
 st.divider()
-st.caption("LookUP v1.0 | Multi-Agent Graph RAG (GNN + Vector Store + Gemini Pro)")
+st.caption("LookUP v1.0 | Multi-Agent Graph RAG (GNN + Vector Store)")
