@@ -83,7 +83,7 @@ def resolve_ticker(query):
     """
     # 1. Clean the query
     stop_words = {"why", "is", "has", "the", "price", "of", "fallen", "risen", 
-                  "today", "on", "what", "how", "situation", "in", "about", "drop", "dropped"}
+                  "today", "on", "what", "how", "situation", "in", "about", "drop", "dropped", "oulook", "impact", "earnings", "movement"}
     words = [w for w in query.lower().split() if w not in stop_words]
     clean_subject = " ".join(words).strip()
 
